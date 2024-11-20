@@ -4,11 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.mosip.digitalcard.constant.ApiName;
 import io.mosip.digitalcard.dto.ErrorDTO;
 import io.mosip.digitalcard.dto.NotificationResponseDTO;
-import io.mosip.digitalcard.exception.ApisResourceAccessException;
 import io.mosip.kernel.core.exception.ExceptionUtils;
 import io.mosip.kernel.core.http.ResponseWrapper;
 import io.mosip.kernel.core.logger.spi.Logger;
-import io.mosip.kernel.core.util.DateUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,11 +18,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -45,9 +41,7 @@ public class NotificationUtil {
     @Autowired
     private ObjectMapper mapper;
 
-    @Value("${mosip.utc-datetime-pattern}")
-    private String dateTimeFormat;
-    @Value("${mosip.primary-language}")
+    @Value("${mosip.template-language}")
     private String primaryLang;
 
     @Value("${mosip.default.user-preferred-language-attribute:#{null}}")
@@ -135,8 +129,4 @@ public class NotificationUtil {
         return new String(in.readAllBytes(), StandardCharsets.UTF_8);
     }
 
-    private String getCurrentResponseTime() {
-        log.info("sessionId", "idType", "id", "In getCurrentResponseTime method of NotificationUtil service");
-        return DateUtils.formatDate(new Date(System.currentTimeMillis()), dateTimeFormat);
-    }
 }
