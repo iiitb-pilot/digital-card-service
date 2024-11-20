@@ -60,7 +60,6 @@ jobs:
 
       - name: Build image
         run: |
-          cd "./${{env.SERVICE_LOCATION}}"
           docker build . --file Dockerfile --tag ${{ env.SERVICE_NAME }}
 
       - name: Log into registry
