@@ -13,6 +13,7 @@ import io.mosip.digitalcard.exception.DigitalCardServiceException;
 import io.mosip.digitalcard.repositories.DigitalCardTransactionRepository;
 import io.mosip.digitalcard.service.DigitalCardService;
 import io.mosip.digitalcard.service.CardGeneratorService;
+import io.mosip.digitalcard.service.EmailHelperService;
 import io.mosip.digitalcard.util.*;
 import io.mosip.digitalcard.websub.CredentialStatusEvent;
 import io.mosip.digitalcard.websub.StatusEvent;
@@ -73,6 +74,9 @@ public class DigitalCardServiceImpl implements DigitalCardService {
     @Autowired
     DigitalCardTransactionRepository digitalCardTransactionRepository;
 
+    @Autowired
+    private EmailHelperService emailHelperService;
+
     /** The Constant VALUE. */
     private static final String VALUE = "value";
 
@@ -90,6 +94,9 @@ public class DigitalCardServiceImpl implements DigitalCardService {
 
     @Value("${mosip.digitalcard.pdf.password.enable.flag:true}")
     private boolean isPasswordProtected;
+
+    @Value("${mosip.digitalcard.email.attachment.enable.flag:false}")
+    private Boolean isEmailEnabled;
 
     @Value("${mosip.digitalcard.credential.request.partner.id}")
     private String partnerId;
@@ -137,6 +144,10 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             }
             byte[] pdfBytes=pdfCardServiceImpl.generateCard(decryptedCredentialJson, credentialType,password,additionalAttributes);
             digitalCardStatusUpdate(transactionId,pdfBytes,credentialType,rid);
+            // Send digital Card Pdf to Email
+            if (isEmailEnabled) {
+                emailHelperService.sendDigitalCardInEmail(decryptedCredentialJson, rid, additionalAttributes, pdfBytes);
+            }
         }catch (QrcodeGenerationException e) {
             loginErrorDetails(rid,DigitalCardServiceErrorCodes.QRCODE_NOT_GENERATED.getError());
             logger.error(DigitalCardServiceErrorCodes.QRCODE_NOT_GENERATED.getErrorMessage(), e);
