@@ -32,7 +32,7 @@ public class EmailHelperServiceImpl implements EmailHelperService {
     private NotificationUtil notificationUtil;
 
     @Override
-    public void sendDigitalCardInEmail(JSONObject decryptedCredentialJson, String rid, Map<String, Object> attributes, byte[] pdfBytes) {
+    public void sendDigitalCardInEmail(JSONObject decryptedCredentialJson, String rid, Map<String, Object> attributes, byte[] pdfBytes, String templateLang) {
 
         if (pdfBytes != null) {
             String residentEmailId = "";
@@ -46,7 +46,7 @@ public class EmailHelperServiceImpl implements EmailHelperService {
             try {
                 List<String> emailIds = Arrays.asList(residentEmailId, defaultEmailIds);
                 List<NotificationResponseDTO> responseDTOs = notificationUtil.emailNotification(emailIds, rid,
-                        UIN_CARD_EMAIL, UIN_CARD_EMAIL_SUB, attributes, pdfBytes);
+                        UIN_CARD_EMAIL, UIN_CARD_EMAIL_SUB, attributes, pdfBytes, templateLang);
                 responseDTOs.forEach(responseDTO ->
                         logger.info("UIN sent successfully via Email, server response..{}", responseDTO)
                 );

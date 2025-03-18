@@ -25,6 +25,7 @@ import io.mosip.kernel.core.qrcodegenerator.exception.QrcodeGenerationException;
 import io.mosip.kernel.core.util.DateUtils;
 import io.mosip.kernel.core.websub.model.EventModel;
 import io.mosip.vercred.CredentialsVerifier;
+import org.apache.commons.codec.binary.Base64;
 import org.json.JSONObject;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
@@ -33,6 +34,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -77,6 +79,9 @@ public class DigitalCardServiceImpl implements DigitalCardService {
     @Autowired
     private EmailHelperService emailHelperService;
 
+    @Autowired
+    private LanguageUtility languageUtility;
+
     /** The Constant VALUE. */
     private static final String VALUE = "value";
 
@@ -113,8 +118,10 @@ public class DigitalCardServiceImpl implements DigitalCardService {
     @Value("${mosip.template-language}")
     private String templateLang;
 
+    @Value("${mosip.default.user-preferred-language-attribute:#{null}}")
+    private String userPreferredLanguageAttribute;
 
-    Logger logger = DigitalCardRepoLogger.getLogger(DigitalCardController.class);
+    private Logger logger = DigitalCardRepoLogger.getLogger(DigitalCardController.class);
 
     public void generateDigitalCard(String credential, String credentialType,String dataShareUrl,String eventId,String transactionId,Map<String,Object> additionalAttributes) {
         boolean isGenerated = false;
@@ -129,7 +136,9 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             JSONObject jsonObject = new org.json.JSONObject(decryptedCredential);
             JSONObject decryptedCredentialJson = jsonObject.getJSONObject("credentialSubject");
             rid=getRid(decryptedCredentialJson.get("id"));
-            if (verifyCredentialsFlag){
+            String prefLangAttr = (String) additionalAttributes.get(userPreferredLanguageAttribute);
+            String templateLang = languageUtility.getLangCodeFromNativeName(prefLangAttr);
+            if (verifyCredentialsFlag) {
                 logger.info("Configured received credentials to be verified. Flag {}", verifyCredentialsFlag);
                 boolean verified =credentialsVerifier.verifyCredentials(decryptedCredential);
                 if (!verified) {
@@ -146,7 +155,7 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             digitalCardStatusUpdate(transactionId,pdfBytes,credentialType,rid);
             // Send digital Card Pdf to Email
             if (isEmailEnabled) {
-                emailHelperService.sendDigitalCardInEmail(decryptedCredentialJson, rid, additionalAttributes, pdfBytes);
+                emailHelperService.sendDigitalCardInEmail(decryptedCredentialJson, rid, additionalAttributes, pdfBytes, templateLang);
             }
         }catch (QrcodeGenerationException e) {
             loginErrorDetails(rid,DigitalCardServiceErrorCodes.QRCODE_NOT_GENERATED.getError());

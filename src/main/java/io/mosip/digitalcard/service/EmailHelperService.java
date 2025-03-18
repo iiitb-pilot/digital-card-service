@@ -13,5 +13,5 @@ public interface EmailHelperService {
      * @param additionalAttributes
      * @param pdfBytes
      */
-    void sendDigitalCardInEmail(JSONObject decryptedCredentialJson, String rid, Map<String,Object> additionalAttributes, byte[] pdfBytes);
+    void sendDigitalCardInEmail(JSONObject decryptedCredentialJson, String rid, Map<String,Object> additionalAttributes, byte[] pdfBytes, String templateLang);
 }
