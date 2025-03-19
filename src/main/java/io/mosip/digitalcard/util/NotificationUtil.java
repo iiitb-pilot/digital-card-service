@@ -80,13 +80,15 @@ public class NotificationUtil {
         try {
             emailMap.set("mailTo", emailId);
             HttpEntity<MultiValueMap<Object, Object>> httpEntity = new HttpEntity<>(emailMap, headers);
-            String responseString = (String) restApiClient.postApi(ApiName.KERNEL_NOTIFICATION_URL, null, "", "",
+            ResponseWrapper<?> responseWrapper = (ResponseWrapper<?>) restApiClient.postApi(ApiName.KERNEL_NOTIFICATION_URL, null, "", "",
                     MediaType.MULTIPART_FORM_DATA, httpEntity, ResponseWrapper.class);
-            notifierResponse = mapper.readValue(responseString, NotificationResponseDTO.class);
-            if (notifierResponse != null) {
-                if (notifierResponse.getErrors() != null && !notifierResponse.getErrors().isEmpty()) {
-                    ErrorDTO error = (ErrorDTO) notifierResponse.getErrors().get(0);
-                    log.error("Received failure response from notification service: ", error.getMessage());
+            if (responseWrapper != null) {
+                notifierResponse = mapper.readValue(mapper.writeValueAsString(responseWrapper.getResponse()), NotificationResponseDTO.class);
+                if (notifierResponse != null) {
+                    if (notifierResponse.getErrors() != null && !notifierResponse.getErrors().isEmpty()) {
+                        ErrorDTO error = (ErrorDTO) notifierResponse.getErrors().get(0);
+                        log.error("Received failure response from notification service: ", error.getMessage());
+                    }
                 }
             }
         } catch (Exception e) {
