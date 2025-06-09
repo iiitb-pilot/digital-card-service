@@ -124,9 +124,6 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 	@Value("${mosip.digitalcard.service.uincard.signature.reason}")
 	private String reason;
 
-	/*@Value("${mosip.digitalcard.templateTypeCode:RPR_UIN_CARD_TEMPLATE}")
-	private String uinCardTemplate;*/
-
 	@Value("${mosip.digitalcard.uin.card.default.templateTypeCode:RPR_UIN_CARD_TEMPLATE}")
 	private String defaultTemplateTypeCode;
 
@@ -180,6 +177,7 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 				if (!isQRcodeSet) {
 					logger.debug(DigitalCardServiceErrorCodes.QRCODE_NOT_SET.name());
 				}
+				logger.info("Attributes:{}", JSONObject.toJSONString(attributes));
 				// getting template and placing original valuespng
 				InputStream uinArtifact = templateGenerator.getTemplate(templateTypeCode, attributes, templateLang);
 				if (uinArtifact == null) {

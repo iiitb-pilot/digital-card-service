@@ -9,6 +9,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -16,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@ConditionalOnExpression("${mosip.digitalcard.email.attachment.enable.flag:false}")
 public class EmailHelperServiceImpl implements EmailHelperService {
 
     private static final String UIN_CARD_EMAIL_SUB = "RPR_UIN_CARD_EMAIL_SUB";
