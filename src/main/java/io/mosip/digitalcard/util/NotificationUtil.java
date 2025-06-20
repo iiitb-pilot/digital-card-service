@@ -39,8 +39,11 @@ public class NotificationUtil {
     @Autowired
     private ObjectMapper mapper;
 
-    private static final String EMAIL_SUB_DEFAULT = "UIN Card Attached!";
-    private static final String EMAIL_DEFAULT = "Your UIN Card is attached.";
+    @Value("${mosip.digitalcard.default.email.sub:Digital Card Attached!}")
+    private String defaultEmailSub;
+
+    @Value("${mosip.digitalcard.default.email:Your digital identity Card is attached}")
+    private String defaultEmail;
 
     public List<NotificationResponseDTO> emailNotification(List<String> emailIds, String fileName, String emailContentTpl, String emailSubTpl, Map<String, Object> attributes,
                                                            byte[] attachmentFile, String templateLang) throws Exception {
@@ -102,7 +105,7 @@ public class NotificationUtil {
 
         InputStream in = templateGenerator.getTemplate(emailContentTpl, attributes, preferredLang);
         if (in == null) {
-            return EMAIL_DEFAULT;
+            return defaultEmail;
         }
         return new String(in.readAllBytes(), StandardCharsets.UTF_8);
     }
@@ -111,7 +114,7 @@ public class NotificationUtil {
 
         InputStream in = templateGenerator.getTemplate(emailSubTpl, attributes, templateLang);
         if (in == null) {
-            return EMAIL_SUB_DEFAULT;
+            return defaultEmailSub;
         }
         return new String(in.readAllBytes(), StandardCharsets.UTF_8);
     }

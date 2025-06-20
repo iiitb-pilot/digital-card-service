@@ -33,7 +33,9 @@ public class DigitalCardConstants {
 
 	public static final int DEFAULT_SALT_KEY_LENGTH = 3;
 
+	public static final String TEMPLATE_TYPE_CODE = "templateTypeCode";
 
+	public static final String VID = "vid";
 	/**
 	 * Instantiates a new id repo constants.
 	 *

@@ -1,5 +1,6 @@
 package io.mosip.digitalcard.service.impl;
 
+import io.mosip.digitalcard.constant.DigitalCardConstants;
 import io.mosip.digitalcard.dto.NotificationResponseDTO;
 import io.mosip.digitalcard.service.EmailHelperService;
 import io.mosip.digitalcard.util.DigitalCardRepoLogger;
@@ -23,6 +24,9 @@ public class EmailHelperServiceImpl implements EmailHelperService {
 
     private static final String UIN_CARD_EMAIL_SUB = "RPR_UIN_CARD_EMAIL_SUB";
     private static final String UIN_CARD_EMAIL = "RPR_UIN_CARD_EMAIL";
+
+    private static final String VID_CARD_EMAIL_SUB = "RPR_VID_CARD_EMAIL_SUB";
+    private static final String VID_CARD_EMAIL = "RPR_VID_CARD_EMAIL";
 
     private Logger logger = DigitalCardRepoLogger.getLogger(EmailHelperService.class);
 
@@ -48,8 +52,10 @@ public class EmailHelperServiceImpl implements EmailHelperService {
             }
             try {
                 List<String> emailIds = Arrays.asList(residentEmailId, defaultEmailIds);
+
                 List<NotificationResponseDTO> responseDTOs = notificationUtil.emailNotification(emailIds, rid,
-                        UIN_CARD_EMAIL, UIN_CARD_EMAIL_SUB, attributes, pdfBytes, templateLang);
+                        (attributes.containsKey(DigitalCardConstants.VID) ? VID_CARD_EMAIL : UIN_CARD_EMAIL),
+                        (attributes.containsKey(DigitalCardConstants.VID) ? VID_CARD_EMAIL_SUB : UIN_CARD_EMAIL_SUB), attributes, pdfBytes, templateLang);
                 responseDTOs.forEach(responseDTO ->
                         logger.info("UIN sent successfully via Email, server response..{}", responseDTO)
                 );

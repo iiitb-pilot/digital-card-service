@@ -65,8 +65,6 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 	/** The Constant APPLICANT_PHOTO. */
 	private static final String APPLICANT_PHOTO = "ApplicantPhoto";
 
-	private static final String TEMPLATE_TYPE_CODE = "templateTypeCode";
-
 	/** The Constant QRCODE. */
 	private static final String QRCODE = "QrCode";
 
@@ -159,8 +157,8 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 			}
 			uin = decryptedCredentialJson.getString("UIN");
 			attributes.putAll(additionalAttributes);
-			if(additionalAttributes.containsKey(TEMPLATE_TYPE_CODE)) {
-				templateTypeCode = additionalAttributes.get(TEMPLATE_TYPE_CODE).toString();
+			if(additionalAttributes.containsKey(DigitalCardConstants.TEMPLATE_TYPE_CODE)) {
+				templateTypeCode = additionalAttributes.get(DigitalCardConstants.TEMPLATE_TYPE_CODE).toString();
 			}
 			if (credentialType.equalsIgnoreCase("qrcode")) {
 				boolean isQRcodeSet = setQrCode(decryptedCredentialJson.toString(), attributes,isPhotoSet);
