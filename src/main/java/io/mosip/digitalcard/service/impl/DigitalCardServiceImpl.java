@@ -137,6 +137,9 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             JSONObject decryptedCredentialJson = jsonObject.getJSONObject("credentialSubject");
             rid=getRid(decryptedCredentialJson.get("id"));
             String prefLangAttr = (String) additionalAttributes.get(userPreferredLanguageAttribute);
+            if (!StringUtils.hasText(prefLangAttr)) {
+                prefLangAttr = templateLang;
+            }
             String templateLang = languageUtility.getLangCodeFromNativeName(prefLangAttr);
             if (verifyCredentialsFlag) {
                 logger.info("Configured received credentials to be verified. Flag {}", verifyCredentialsFlag);

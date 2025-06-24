@@ -54,8 +54,8 @@ public class EmailHelperServiceImpl implements EmailHelperService {
                 List<String> emailIds = Arrays.asList(residentEmailId, defaultEmailIds);
 
                 List<NotificationResponseDTO> responseDTOs = notificationUtil.emailNotification(emailIds, rid,
-                        (attributes.containsKey(DigitalCardConstants.VID) ? VID_CARD_EMAIL : UIN_CARD_EMAIL),
-                        (attributes.containsKey(DigitalCardConstants.VID) ? VID_CARD_EMAIL_SUB : UIN_CARD_EMAIL_SUB), attributes, pdfBytes, templateLang);
+                        (attributes.containsKey(DigitalCardConstants.VID_CARD) ? VID_CARD_EMAIL : UIN_CARD_EMAIL),
+                        (attributes.containsKey(DigitalCardConstants.VID_CARD) ? VID_CARD_EMAIL_SUB : UIN_CARD_EMAIL_SUB), attributes, pdfBytes, templateLang);
                 responseDTOs.forEach(responseDTO ->
                         logger.info("UIN sent successfully via Email, server response..{}", responseDTO)
                 );
