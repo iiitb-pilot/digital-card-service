@@ -3,6 +3,7 @@ package io.mosip.digitalcard.service.impl;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import io.mosip.digitalcard.constant.DigitalCardServiceErrorCodes;
+import io.mosip.digitalcard.constant.IdType;
 import io.mosip.digitalcard.controller.DigitalCardController;
 import io.mosip.digitalcard.dto.*;
 import io.mosip.digitalcard.entity.DigitalCardTransactionEntity;
@@ -133,8 +134,13 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             JSONObject jsonObject = new org.json.JSONObject(decryptedCredential);
             JSONObject decryptedCredentialJson = jsonObject.getJSONObject("credentialSubject");
             rid=getRid(decryptedCredentialJson.get("id"));
+            additionalAttributes.put(IdType.RID.toString(), rid);
+
             String prefLangAttr = (String) additionalAttributes.get(userPreferredLanguageAttribute);
+            logger.info("prefLangAttr {}", prefLangAttr);
+
             String templateLangCode = languageUtility.getLangCodeFromNativeName(prefLangAttr);
+            logger.info("templateLangCode: {}, defaultTplLangCode: {}", templateLangCode, defaultTplLangCode);
             if (!StringUtils.hasText(templateLangCode)) {
                 templateLangCode = defaultTplLangCode;
             }
