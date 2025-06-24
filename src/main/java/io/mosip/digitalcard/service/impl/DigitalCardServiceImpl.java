@@ -2,18 +2,16 @@ package io.mosip.digitalcard.service.impl;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.mosip.digitalcard.constant.DigitalCardServiceErrorCodes;
 import io.mosip.digitalcard.constant.IdType;
 import io.mosip.digitalcard.controller.DigitalCardController;
 import io.mosip.digitalcard.dto.*;
 import io.mosip.digitalcard.entity.DigitalCardTransactionEntity;
-import io.mosip.digitalcard.exception.ApiNotAccessibleException;
-import io.mosip.digitalcard.exception.DataNotFoundException;
-import io.mosip.digitalcard.exception.DataShareException;
-import io.mosip.digitalcard.exception.DigitalCardServiceException;
+import io.mosip.digitalcard.exception.*;
 import io.mosip.digitalcard.repositories.DigitalCardTransactionRepository;
-import io.mosip.digitalcard.service.DigitalCardService;
 import io.mosip.digitalcard.service.CardGeneratorService;
+import io.mosip.digitalcard.service.DigitalCardService;
 import io.mosip.digitalcard.service.EmailHelperService;
 import io.mosip.digitalcard.util.*;
 import io.mosip.digitalcard.websub.CredentialStatusEvent;
@@ -28,6 +26,7 @@ import io.mosip.vercred.CredentialsVerifier;
 import org.json.JSONObject;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
@@ -80,6 +79,9 @@ public class DigitalCardServiceImpl implements DigitalCardService {
     @Autowired
     private LanguageUtility languageUtility;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     /** The Constant VALUE. */
     private static final String VALUE = "value";
 
@@ -116,6 +118,9 @@ public class DigitalCardServiceImpl implements DigitalCardService {
     @Value("${mosip.template-language}")
     private String defaultTplLangCode;
 
+    @Value("${mosip.supported-languages}")
+    private String supportedLang;
+
     @Value("${mosip.default.user-preferred-language-attribute:#{null}}")
     private String userPreferredLanguageAttribute;
 
@@ -123,6 +128,7 @@ public class DigitalCardServiceImpl implements DigitalCardService {
 
     public void generateDigitalCard(String credential, String credentialType,String dataShareUrl,String eventId,String transactionId,Map<String,Object> additionalAttributes) {
         boolean isGenerated = false;
+        Map<String, Object> attributes = new LinkedHashMap<>();
         String decryptedCredential=null;
         String password=null;
         String rid=null;
@@ -130,17 +136,20 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             if (dataShareUrl != null) {
                 credential = restClient.getForObject(dataShareUrl, String.class);
             }
+            attributes.putAll(additionalAttributes);
             decryptedCredential = encryptionUtil.decryptData(credential);
             JSONObject jsonObject = new org.json.JSONObject(decryptedCredential);
             JSONObject decryptedCredentialJson = jsonObject.getJSONObject("credentialSubject");
             rid=getRid(decryptedCredentialJson.get("id"));
-            additionalAttributes.put(IdType.RID.toString(), rid);
-
-            String prefLangAttr = (String) additionalAttributes.get(userPreferredLanguageAttribute);
+            attributes.put(IdType.RID.toString(), rid);
+            //sets additional attributes for all templates.
+            setTemplateAttributes(decryptedCredentialJson, attributes);
+            String prefLangAttr = (String) attributes.get(userPreferredLanguageAttribute);
             logger.info("prefLangAttr {}", prefLangAttr);
 
             String templateLangCode = languageUtility.getLangCodeFromNativeName(prefLangAttr);
             logger.info("templateLangCode: {}, defaultTplLangCode: {}", templateLangCode, defaultTplLangCode);
+            logger.info("Additional Attributes: {}", attributes);
             if (!StringUtils.hasText(templateLangCode)) {
                 templateLangCode = defaultTplLangCode;
             }
@@ -157,11 +166,11 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             if (isPasswordProtected) {
                 password = getPassword(decryptedCredentialJson, templateLangCode);
             }
-            byte[] pdfBytes=pdfCardServiceImpl.generateCard(decryptedCredentialJson, credentialType,password,additionalAttributes, templateLangCode);
+            byte[] pdfBytes=pdfCardServiceImpl.generateCard(decryptedCredentialJson, credentialType,password,attributes, templateLangCode);
             digitalCardStatusUpdate(transactionId,pdfBytes,credentialType,rid);
             // Send digital Card Pdf to Email
             if (isEmailEnabled) {
-                emailHelperService.sendDigitalCardInEmail(decryptedCredentialJson, rid, additionalAttributes, pdfBytes, templateLangCode);
+                emailHelperService.sendDigitalCardInEmail((String) attributes.get(IdType.RID.toString()), attributes, pdfBytes, templateLangCode);
             }
         }catch (QrcodeGenerationException e) {
             loginErrorDetails(rid,DigitalCardServiceErrorCodes.QRCODE_NOT_GENERATED.getError());
@@ -345,4 +354,63 @@ public class DigitalCardServiceImpl implements DigitalCardService {
         digitalCardTransactionRepository.updateErrorTransactionDetails(rid,"ERROR",errorMsg,LocalDateTime.now(),Utility.getUser());
     }
 
+
+    /**
+     * Gets the artifacts.
+     *
+     * @param attribute    the attribute
+     * @return the artifacts
+     * @throws IOException    Signals that an I/O exception has occurred.
+     * @throws ParseException
+     */
+    @SuppressWarnings("unchecked")
+    private void setTemplateAttributes(org.json.JSONObject demographicIdentity, Map<String, Object> attribute)
+            throws Exception {
+        try {
+            if (demographicIdentity == null)
+                throw new IdentityNotFoundException(DigitalCardServiceErrorCodes.IDENTITY_NOT_FOUND.getErrorCode(),DigitalCardServiceErrorCodes.IDENTITY_NOT_FOUND.getErrorMessage());
+
+            String mapperJsonString = utility.getIdentityMappingJson(utility.getConfigServerFileStorageURL(),
+                    utility.getIdentityJson());
+            org.json.simple.JSONObject mapperJson = objectMapper.readValue(mapperJsonString, org.json.simple.JSONObject.class);
+            org.json.simple.JSONObject mapperIdentity = utility.getJSONObject(mapperJson,
+                    utility.getDemographicIdentity());
+
+            List<String> mapperJsonKeys = new ArrayList<>(mapperIdentity.keySet());
+            for (String key : mapperJsonKeys) {
+                LinkedHashMap<String, String> jsonObject = utility.getJSONValue(mapperIdentity, key);
+                Object obj = null;
+                String values = jsonObject.get(VALUE);
+                for (String value : values.split(",")) {
+                    // Object object = demographicIdentity.get(value);
+                    Object object = demographicIdentity.has(value)?demographicIdentity.get(value):null;
+                    if (object != null) {
+                        try {
+                            obj = new JSONParser().parse(object.toString());
+                        } catch (Exception e) {
+                            obj = object;
+                        }
+
+                        if (obj instanceof JSONArray && !key.equalsIgnoreCase("bestTwoFingers")) {
+                            // JSONArray node = JsonUtil.getJSONArray(demographicIdentity, value);
+                            SimpleType[] jsonValues = Utility.mapJsonNodeToJavaObject(SimpleType.class, (JSONArray) obj);
+                            for (SimpleType jsonValue : jsonValues) {
+                                if (supportedLang.contains(jsonValue.getLanguage()))
+                                    attribute.put(value + "_" + jsonValue.getLanguage(), jsonValue.getValue());
+                            }
+                        } else if (object instanceof org.json.simple.JSONObject) {
+                            org.json.simple.JSONObject json = (org.json.simple.JSONObject) object;
+                            attribute.put(value, (String) json.get(VALUE));
+                        } else {
+                            attribute.put(value, String.valueOf(object));
+                        }
+                    }
+
+                }
+            }
+        } catch (JsonParseException | JsonMappingException | DigitalCardServiceException e) {
+            logger.error("Error while parsing Json file" ,e);
+        }
+
+    }
 }

@@ -6,8 +6,6 @@ import io.mosip.digitalcard.service.EmailHelperService;
 import io.mosip.digitalcard.util.DigitalCardRepoLogger;
 import io.mosip.digitalcard.util.NotificationUtil;
 import io.mosip.kernel.core.logger.spi.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -38,21 +36,17 @@ public class EmailHelperServiceImpl implements EmailHelperService {
     private NotificationUtil notificationUtil;
 
     @Override
-    public void sendDigitalCardInEmail(JSONObject decryptedCredentialJson, String rid, Map<String, Object> attributes, byte[] pdfBytes, String templateLang) {
+    public void sendDigitalCardInEmail(String fileName, Map<String, Object> attributes, byte[] pdfBytes, String templateLang) {
 
         if (pdfBytes != null) {
             String residentEmailId = "";
-            if (decryptedCredentialJson.has(emailAttribute)) {
-                try {
-                    residentEmailId = decryptedCredentialJson.getString(emailAttribute);
-                } catch (JSONException e) {
-                    logger.error("Resident email fetch failed", residentEmailId, e);
-                }
+            if (attributes.containsKey(emailAttribute)) {
+                residentEmailId = (String) attributes.get(emailAttribute);
             }
             try {
                 List<String> emailIds = Arrays.asList(residentEmailId, defaultEmailIds);
 
-                List<NotificationResponseDTO> responseDTOs = notificationUtil.emailNotification(emailIds, rid,
+                List<NotificationResponseDTO> responseDTOs = notificationUtil.emailNotification(emailIds, fileName,
                         (attributes.containsKey(DigitalCardConstants.VID_CARD) ? VID_CARD_EMAIL : UIN_CARD_EMAIL),
                         (attributes.containsKey(DigitalCardConstants.VID_CARD) ? VID_CARD_EMAIL_SUB : UIN_CARD_EMAIL_SUB), attributes, pdfBytes, templateLang);
                 responseDTOs.forEach(responseDTO ->

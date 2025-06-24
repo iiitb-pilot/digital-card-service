@@ -10,7 +10,7 @@ public interface CardGeneratorService {
 	/**
 	 * The PDFCardService
 	 *
-	 * @param additionalAttribute
+	 * @param additionalAttributes
 	 * @param decryptedCredentialJson
 	 * @param credentialType
 	 * @param password

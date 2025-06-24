@@ -5,14 +5,15 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.mosip.biometrics.util.ConvertRequestDto;
 import io.mosip.biometrics.util.face.FaceDecoder;
-import io.mosip.digitalcard.constant.*;
+import io.mosip.digitalcard.constant.ApiName;
+import io.mosip.digitalcard.constant.DigitalCardConstants;
+import io.mosip.digitalcard.constant.DigitalCardServiceErrorCodes;
+import io.mosip.digitalcard.constant.PDFGeneratorExceptionCodeConstant;
 import io.mosip.digitalcard.dto.PDFSignatureRequestDto;
 import io.mosip.digitalcard.dto.SignatureResponseDto;
-import io.mosip.digitalcard.dto.SimpleType;
-import io.mosip.digitalcard.service.CardGeneratorService;
 import io.mosip.digitalcard.exception.DigitalCardServiceException;
-import io.mosip.digitalcard.exception.IdentityNotFoundException;
 import io.mosip.digitalcard.repositories.DigitalCardTransactionRepository;
+import io.mosip.digitalcard.service.CardGeneratorService;
 import io.mosip.digitalcard.util.*;
 import io.mosip.kernel.biometrics.spi.CbeffUtil;
 import io.mosip.kernel.core.exception.ServiceError;
@@ -29,20 +30,22 @@ import io.mosip.vercred.CredentialsVerifier;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class PDFCardServiceImpl implements CardGeneratorService {
@@ -101,9 +104,6 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 	@Autowired
 	private CredentialsVerifier credentialsVerifier;
 
-	@Value("${mosip.supported-languages}")
-	private String supportedLang;
-
 	@Value("${mosip.digitalcard.service.uincard.lowerleftx}")
 	private int lowerLeftX;
 
@@ -122,7 +122,6 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 	@Value("${mosip.digitalcard.uin.card.default.templateTypeCode:RPR_UIN_CARD_TEMPLATE}")
 	private String defaultTemplateTypeCode;
 
-
 	@Autowired
 	private ObjectMapper objectMapper;
 
@@ -136,13 +135,10 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 	 * @see io.mosip.digitalcard.service.PDFService#
 	 */
 	public byte[] generateCard(org.json.JSONObject decryptedCredentialJson, String credentialType,
-							   String password, Map<String, Object> additionalAttributes, String templateLang) throws Exception {
+							   String password, Map<String, Object> attributes, String templateLang) throws Exception {
 		logger.debug("PDFServiceImpl::getDocuments()::entry");
-		boolean isGenerated=false;
-		String uin = null;
 		boolean isPhotoSet=false;
 		String individualBio = null;
-		Map<String, Object> attributes = new LinkedHashMap<>();
 		String templateTypeCode = defaultTemplateTypeCode;
 		byte[] pdfbytes = null;
 		try {
@@ -152,10 +148,8 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 				isPhotoSet = setApplicantPhoto(individualBiometric, attributes);
 				attributes.put("isPhotoSet",isPhotoSet);
 			}
-			uin = decryptedCredentialJson.getString("UIN");
-			attributes.putAll(additionalAttributes);
-			if(additionalAttributes.containsKey(DigitalCardConstants.TEMPLATE_TYPE_CODE)) {
-				templateTypeCode = additionalAttributes.get(DigitalCardConstants.TEMPLATE_TYPE_CODE).toString();
+			if(attributes.containsKey(DigitalCardConstants.TEMPLATE_TYPE_CODE)) {
+				templateTypeCode = attributes.get(DigitalCardConstants.TEMPLATE_TYPE_CODE).toString();
 			}
 			if (credentialType.equalsIgnoreCase("qrcode")) {
 				boolean isQRcodeSet = setQrCode(decryptedCredentialJson.toString(), attributes,isPhotoSet);
@@ -165,9 +159,6 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 				if (!isPhotoSet) {
 					logger.debug(DigitalCardServiceErrorCodes.APPLICANT_PHOTO_NOT_SET.name());
 				}
-				setTemplateAttributes(decryptedCredentialJson, attributes);
-				// putting additional attribute for vid card
-				attributes.put(IdType.UIN.toString(), uin);
 				boolean isQRcodeSet = setQrCode(decryptedCredentialJson.toString(), attributes,isPhotoSet);
 				if (!isQRcodeSet) {
 					logger.debug(DigitalCardServiceErrorCodes.QRCODE_NOT_SET.name());
@@ -262,65 +253,6 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 			}
 		}
 		return isPhotoSet;
-	}
-
-	/**
-	 * Gets the artifacts.
-	 *
-	 * @param attribute    the attribute
-	 * @return the artifacts
-	 * @throws IOException    Signals that an I/O exception has occurred.
-	 * @throws ParseException
-	 */
-	@SuppressWarnings("unchecked")
-	private void setTemplateAttributes(org.json.JSONObject demographicIdentity, Map<String, Object> attribute)
-			throws Exception {
-		try {
-			if (demographicIdentity == null)
-				throw new IdentityNotFoundException(DigitalCardServiceErrorCodes.IDENTITY_NOT_FOUND.getErrorCode(),DigitalCardServiceErrorCodes.IDENTITY_NOT_FOUND.getErrorMessage());
-
-			String mapperJsonString = utility.getIdentityMappingJson(utility.getConfigServerFileStorageURL(),
-					utility.getIdentityJson());
-			JSONObject mapperJson = objectMapper.readValue(mapperJsonString, JSONObject.class);
-			JSONObject mapperIdentity = utility.getJSONObject(mapperJson,
-					utility.getDemographicIdentity());
-
-			List<String> mapperJsonKeys = new ArrayList<>(mapperIdentity.keySet());
-			for (String key : mapperJsonKeys) {
-				LinkedHashMap<String, String> jsonObject = utility.getJSONValue(mapperIdentity, key);
-				Object obj = null;
-				String values = jsonObject.get(VALUE);
-				for (String value : values.split(",")) {
-					// Object object = demographicIdentity.get(value);
-					Object object = demographicIdentity.has(value)?demographicIdentity.get(value):null;
-					if (object != null) {
-						try {
-							obj = new JSONParser().parse(object.toString());
-						} catch (Exception e) {
-							obj = object;
-						}
-
-						if (obj instanceof JSONArray && !key.equalsIgnoreCase("bestTwoFingers")) {
-							// JSONArray node = JsonUtil.getJSONArray(demographicIdentity, value);
-							SimpleType[] jsonValues = Utility.mapJsonNodeToJavaObject(SimpleType.class, (JSONArray) obj);
-							for (SimpleType jsonValue : jsonValues) {
-								if (supportedLang.contains(jsonValue.getLanguage()))
-									attribute.put(value + "_" + jsonValue.getLanguage(), jsonValue.getValue());
-							}
-						} else if (object instanceof JSONObject) {
-							JSONObject json = (JSONObject) object;
-							attribute.put(value, (String) json.get(VALUE));
-						} else {
-							attribute.put(value, String.valueOf(object));
-						}
-					}
-
-				}
-			}
-			} catch (JsonParseException | JsonMappingException | DigitalCardServiceException e) {
-				logger.error("Error while parsing Json file" ,e);
-			}
-
 	}
 
 	private byte[] generateUinCard(InputStream in, String password) {
