@@ -23,16 +23,13 @@ import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.pdfgenerator.exception.PDFGeneratorException;
 import io.mosip.kernel.core.qrcodegenerator.exception.QrcodeGenerationException;
 import io.mosip.kernel.core.util.DateUtils;
-import io.mosip.kernel.core.websub.model.EventModel;
 import io.mosip.vercred.CredentialsVerifier;
-import org.apache.commons.codec.binary.Base64;
 import org.json.JSONObject;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -116,7 +113,7 @@ public class DigitalCardServiceImpl implements DigitalCardService {
     private String digitalCardPassword;
 
     @Value("${mosip.template-language}")
-    private String templateLang;
+    private String defaultTplLangCode;
 
     @Value("${mosip.default.user-preferred-language-attribute:#{null}}")
     private String userPreferredLanguageAttribute;
@@ -137,10 +134,10 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             JSONObject decryptedCredentialJson = jsonObject.getJSONObject("credentialSubject");
             rid=getRid(decryptedCredentialJson.get("id"));
             String prefLangAttr = (String) additionalAttributes.get(userPreferredLanguageAttribute);
-            if (!StringUtils.hasText(prefLangAttr)) {
-                prefLangAttr = templateLang;
+            String templateLangCode = languageUtility.getLangCodeFromNativeName(prefLangAttr);
+            if (!StringUtils.hasText(templateLangCode)) {
+                templateLangCode = defaultTplLangCode;
             }
-            String templateLang = languageUtility.getLangCodeFromNativeName(prefLangAttr);
             if (verifyCredentialsFlag) {
                 logger.info("Configured received credentials to be verified. Flag {}", verifyCredentialsFlag);
                 boolean verified =credentialsVerifier.verifyCredentials(decryptedCredential);
@@ -152,13 +149,13 @@ public class DigitalCardServiceImpl implements DigitalCardService {
                 }
             }
             if (isPasswordProtected) {
-                password = getPassword(decryptedCredentialJson);
+                password = getPassword(decryptedCredentialJson, templateLangCode);
             }
-            byte[] pdfBytes=pdfCardServiceImpl.generateCard(decryptedCredentialJson, credentialType,password,additionalAttributes);
+            byte[] pdfBytes=pdfCardServiceImpl.generateCard(decryptedCredentialJson, credentialType,password,additionalAttributes, templateLangCode);
             digitalCardStatusUpdate(transactionId,pdfBytes,credentialType,rid);
             // Send digital Card Pdf to Email
             if (isEmailEnabled) {
-                emailHelperService.sendDigitalCardInEmail(decryptedCredentialJson, rid, additionalAttributes, pdfBytes, templateLang);
+                emailHelperService.sendDigitalCardInEmail(decryptedCredentialJson, rid, additionalAttributes, pdfBytes, templateLangCode);
             }
         }catch (QrcodeGenerationException e) {
             loginErrorDetails(rid,DigitalCardServiceErrorCodes.QRCODE_NOT_GENERATED.getError());
@@ -271,7 +268,7 @@ public class DigitalCardServiceImpl implements DigitalCardService {
      * @return
      * @throws Exception
      */
-    private String getPassword(JSONObject jsonObject) throws Exception {
+    private String getPassword(JSONObject jsonObject, String tplLangCode) throws Exception {
         String[] attributes = digitalCardPassword.split("\\|");
         List<String> list = new ArrayList<>(Arrays.asList(attributes));
 
@@ -292,7 +289,7 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             if (obj instanceof JSONArray) {
                 // JSONArray node = JsonUtil.getJSONArray(demographicIdentity, value);
                 SimpleType[] jsonValues = Utility.mapJsonNodeToJavaObject(SimpleType.class, (JSONArray) obj);
-                uinCardPd = uinCardPd.concat(getFormattedPasswordAttribute(getParameter(jsonValues, templateLang)).substring(0,4));
+                uinCardPd = uinCardPd.concat(getFormattedPasswordAttribute(getParameter(jsonValues, tplLangCode)).substring(0,4));
             } else if (object instanceof org.json.simple.JSONObject) {
                 org.json.simple.JSONObject json = (org.json.simple.JSONObject) object;
                 uinCardPd = uinCardPd.concat((String) json.get(VALUE));

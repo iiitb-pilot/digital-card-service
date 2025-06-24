@@ -101,9 +101,6 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 	@Autowired
 	private CredentialsVerifier credentialsVerifier;
 
-	@Value("${mosip.template-language}")
-	private String templateLang;
-
 	@Value("${mosip.supported-languages}")
 	private String supportedLang;
 
@@ -139,7 +136,7 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 	 * @see io.mosip.digitalcard.service.PDFService#
 	 */
 	public byte[] generateCard(org.json.JSONObject decryptedCredentialJson, String credentialType,
-							   String password, Map<String, Object> additionalAttributes) throws Exception {
+							   String password, Map<String, Object> additionalAttributes, String templateLang) throws Exception {
 		logger.debug("PDFServiceImpl::getDocuments()::entry");
 		boolean isGenerated=false;
 		String uin = null;
