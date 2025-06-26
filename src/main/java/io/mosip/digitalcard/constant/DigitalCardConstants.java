@@ -35,7 +35,7 @@ public class DigitalCardConstants {
 
 	public static final String TEMPLATE_TYPE_CODE = "templateTypeCode";
 
-	public static final String VID = "vid";
+	public static final String VID_CARD = "vidCard";
 	/**
 	 * Instantiates a new id repo constants.
 	 *
