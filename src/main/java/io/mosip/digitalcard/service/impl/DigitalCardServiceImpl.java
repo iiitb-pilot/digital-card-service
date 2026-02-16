@@ -13,6 +13,7 @@ import io.mosip.digitalcard.repositories.DigitalCardTransactionRepository;
 import io.mosip.digitalcard.service.CardGeneratorService;
 import io.mosip.digitalcard.service.DigitalCardService;
 import io.mosip.digitalcard.service.EmailHelperService;
+import io.mosip.digitalcard.service.WhatsAppHelperService;
 import io.mosip.digitalcard.util.*;
 import io.mosip.digitalcard.websub.CredentialStatusEvent;
 import io.mosip.digitalcard.websub.StatusEvent;
@@ -75,6 +76,9 @@ public class DigitalCardServiceImpl implements DigitalCardService {
 
     @Autowired
     private EmailHelperService emailHelperService;
+
+    @Autowired(required = false)
+    private WhatsAppHelperService whatsAppHelperService;
 
     @Autowired
     private LanguageUtility languageUtility;
@@ -144,6 +148,7 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             attributes.put(IdType.RID.toString(), rid);
             //sets additional attributes for all templates.
             setTemplateAttributes(decryptedCredentialJson, attributes);
+            logger.info("WhatsApp Number in attributes: {}", attributes.get("whatsappNumber"));
             String prefLangAttr = (String) attributes.get(userPreferredLanguageAttribute);
             logger.info("prefLangAttr {}", prefLangAttr);
 
@@ -171,6 +176,10 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             // Send digital Card Pdf to Email
             if (isEmailEnabled) {
                 emailHelperService.sendDigitalCardInEmail((String) attributes.get(IdType.RID.toString()), attributes, pdfBytes, templateLangCode);
+            }
+            // Send digital Card Pdf to WhatsApp
+            if (whatsAppHelperService != null) {
+                whatsAppHelperService.sendDigitalCardInWhatsApp((String) attributes.get(IdType.RID.toString()), attributes, pdfBytes, templateLangCode);
             }
         }catch (QrcodeGenerationException e) {
             loginErrorDetails(rid,DigitalCardServiceErrorCodes.QRCODE_NOT_GENERATED.getError());
