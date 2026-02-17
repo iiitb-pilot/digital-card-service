@@ -82,9 +82,11 @@ public class DigitalCardController {
         try {
             Map<String, Object> additionalAttributes= new HashMap<>();
             additionalAttributes.putAll(eventModel.getEvent().getData());
+            logger.info("Additional Attributes BEFORE REMOVE: {}", additionalAttributes);
             additionalAttributes.remove("credential");
             additionalAttributes.remove("protectionKey");
             additionalAttributes.remove("proof");
+            logger.info("Additional Attributes AFTER REMOVE: {}", additionalAttributes);
             digitalCardServiceImpl.generateDigitalCard(eventModel.getEvent().getData().containsKey("credential")?eventModel.getEvent().getData().get("credential").toString():null,
                     eventModel.getEvent().getData().get("credentialType").toString(),
                     eventModel.getEvent().getDataShareUri(), eventModel.getEvent().getId(), eventModel.getEvent().getTransactionId(),additionalAttributes);
