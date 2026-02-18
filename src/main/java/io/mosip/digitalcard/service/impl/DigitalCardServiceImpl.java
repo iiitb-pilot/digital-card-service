@@ -149,6 +149,7 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             //sets additional attributes for all templates.
             setTemplateAttributes(decryptedCredentialJson, attributes);
             logger.info("WhatsApp Number in attributes: {}", attributes.get("whatsappNumber"));
+            logger.info("Email Id in attributes: {}", attributes.get("email"));
             String prefLangAttr = (String) attributes.get(userPreferredLanguageAttribute);
             logger.info("prefLangAttr {}", prefLangAttr);
 
