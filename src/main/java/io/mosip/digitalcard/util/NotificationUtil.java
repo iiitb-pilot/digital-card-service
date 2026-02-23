@@ -127,7 +127,7 @@ public class NotificationUtil {
         if (attachmentFile != null) {
             LinkedMultiValueMap<String, String> fileHeaders = new LinkedMultiValueMap<>();
             fileHeaders.add("Content-Disposition",
-                    "form-data; name=file; filename=" + fileName + ".pdf");
+                    "form-data; name=files; filename=" + fileName + ".pdf");
             fileHeaders.add("Content-Type", "application/pdf");
 
             HttpEntity<byte[]> fileEntity = new HttpEntity<>(attachmentFile, fileHeaders);
