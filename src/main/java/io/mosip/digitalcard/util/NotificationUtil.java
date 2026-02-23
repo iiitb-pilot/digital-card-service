@@ -132,7 +132,7 @@ public class NotificationUtil {
 
             HttpEntity<byte[]> fileEntity = new HttpEntity<>(attachmentFile, fileHeaders);
 
-            map.add("file", fileEntity);
+            map.add("files", fileEntity);
         }
         map.add("recipient", whatsappNumber);
         map.add("message", getEmailContent(templateCode, attributes, templateLang));
