@@ -139,7 +139,7 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             attributes.putAll(additionalAttributes);
             decryptedCredential = encryptionUtil.decryptData(credential);
             JSONObject jsonObject = new org.json.JSONObject(decryptedCredential);
-            // print gova
+            // print gova print
             logger.info("RID: {}", jsonObject.getJSONObject("credentialSubject").get("id"));
             JSONObject decryptedCredentialJson = jsonObject.getJSONObject("credentialSubject");
             rid=getRid(decryptedCredentialJson.get("id"));
