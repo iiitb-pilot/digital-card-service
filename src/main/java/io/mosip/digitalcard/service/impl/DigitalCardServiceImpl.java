@@ -138,9 +138,9 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             }
             attributes.putAll(additionalAttributes);
             decryptedCredential = encryptionUtil.decryptData(credential);
+            logger.info("Decrypted Credential String: {}", decryptedCredential);
             JSONObject jsonObject = new org.json.JSONObject(decryptedCredential);
-            // print gova print 1
-            logger.info("RID: {}", jsonObject.getJSONObject("credentialSubject").get("id"));
+            logger.info("Decrypted Credential JSON Object: {}", jsonObject);
             JSONObject decryptedCredentialJson = jsonObject.getJSONObject("credentialSubject");
             rid=getRid(decryptedCredentialJson.get("id"));
             attributes.put(IdType.RID.toString(), rid);
