@@ -113,7 +113,7 @@ public class PDFCardServiceImplTest {
         lenient().when(templateGenerator.getTemplate(anyString(), anyMap(), anyString())).thenReturn(mockInputStream);
 
         try {
-            byte[] result = pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes);
+            byte[] result = pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes,"eng");
 
             assertNotNull(result);
             verify(templateGenerator, times(1)).getTemplate(anyString(), anyMap(), anyString());
@@ -158,7 +158,7 @@ public class PDFCardServiceImplTest {
         lenient().when(templateGenerator.getTemplate(anyString(), anyMap(), anyString()))
                 .thenReturn(null);
 
-        pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes);
+        pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes,"eng");
     }
 
     @Test
@@ -251,7 +251,7 @@ public class PDFCardServiceImplTest {
         when(objectMapper.writeValueAsString(any())).thenReturn("{}");
         when(objectMapper.readValue(anyString(), eq(SignatureResponseDto.class))).thenReturn(signatureResponseDto);
 
-        byte[] result = pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes);
+        byte[] result = pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes,"eng");
         assertNotNull(result);
     }
 
@@ -283,7 +283,7 @@ public class PDFCardServiceImplTest {
 
         DigitalCardServiceException ex = assertThrows(
                 DigitalCardServiceException.class,
-                () -> pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes)
+                () -> pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes,"eng")
         );
 
         String expectedErrorCode = DigitalCardServiceErrorCodes.DATASHARE_EXCEPTION.getErrorCode();
@@ -459,7 +459,7 @@ public class PDFCardServiceImplTest {
         when(objectMapper.writeValueAsString(any())).thenReturn("{}");
         when(objectMapper.readValue(anyString(), eq(SignatureResponseDto.class))).thenReturn(signatureResponseDto);
 
-        byte[] result = pdfCardService.generateCard(decrypted, credentialType, password, additional);
+        byte[] result = pdfCardService.generateCard(decrypted, credentialType, password, additional,"eng");
         assertNotNull(result);
 
         org.mockito.ArgumentCaptor<String> typeCaptor = org.mockito.ArgumentCaptor.forClass(String.class);
