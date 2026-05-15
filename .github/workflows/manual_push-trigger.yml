@@ -16,7 +16,7 @@ on:
     branches:
       - '!master'
       - dst-*
-	    - mec-*
+      - mec-*
 
 jobs:
   build-maven-digitalcard:
