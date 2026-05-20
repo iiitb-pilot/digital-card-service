@@ -34,15 +34,16 @@
 		<central.publishing.maven.plugin.version>0.7.0</central.publishing.maven.plugin.version>
 	</properties>
 	<repositories>
-		<repository>
-			<id>ossrh-central</id>
-			<name>MavenCentralRepository</name>
-			<url>https://central.sonatype.com/repository/maven-snapshots</url>
-			<layout>default</layout>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
+		<!-- i commented this gova_change3 -->
+<!--		<repository>-->
+<!--			<id>ossrh-central</id>-->
+<!--			<name>MavenCentralRepository</name>-->
+<!--			<url>https://central.sonatype.com/repository/maven-snapshots</url>-->
+<!--			<layout>default</layout>-->
+<!--			<snapshots>-->
+<!--				<enabled>true</enabled>-->
+<!--			</snapshots>-->
+<!--		</repository>-->
 		<repository>
 			<id>central</id>
 			<name>MavenCentral</name>
@@ -196,12 +197,19 @@
 			<groupId>io.mosip.vercred</groupId>
 			<artifactId>vcverifier</artifactId>
 			<version>1.0.0</version>
-			<exclusions>
-				<exclusion>
-					<groupId>info.weboftrust</groupId>
-					<artifactId>ld-signatures-java</artifactId>
-				</exclusion>
-			</exclusions>
+			<!-- i commented this gova_change1 -->
+<!--			<exclusions>-->
+<!--				<exclusion>-->
+<!--					<groupId>info.weboftrust</groupId>-->
+<!--					<artifactId>ld-signatures-java</artifactId>-->
+<!--				</exclusion>-->
+<!--			</exclusions>-->
+		</dependency>
+		<!-- i added this gova_change2 -->
+		<dependency>
+			<groupId>info.weboftrust</groupId>
+			<artifactId>ld-signatures-java</artifactId>
+			<version>1.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
