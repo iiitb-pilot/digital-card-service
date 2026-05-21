@@ -34,6 +34,7 @@
 		<central.publishing.maven.plugin.version>0.7.0</central.publishing.maven.plugin.version>
 	</properties>
 	<repositories>
+		<!-- i commented this gova_change3 -->
 		<repository>
 			<id>ossrh-central</id>
 			<name>MavenCentralRepository</name>
@@ -52,6 +53,17 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
+		<!-- i added this gova_change5 -->
+		<repository>
+			<id>danubetech</id>
+			<name>danubetech</name>
+			<layout>default</layout>
+			<url>https://repo.danubetech.com/repository/maven-public/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+
 	</repositories>
 	<dependencies>
 		<dependency>
@@ -196,12 +208,25 @@
 			<groupId>io.mosip.vercred</groupId>
 			<artifactId>vcverifier</artifactId>
 			<version>1.0.0</version>
+			<!-- i commented this gova_change1 -->
 			<exclusions>
 				<exclusion>
 					<groupId>info.weboftrust</groupId>
 					<artifactId>ld-signatures-java</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<!-- i added this gova_change2 -->
+<!--		<dependency>-->
+<!--			<groupId>info.weboftrust</groupId>-->
+<!--			<artifactId>ld-signatures-java</artifactId>-->
+<!--			<version>1.1.0</version>-->
+<!--		</dependency>-->
+		<!-- i added this gova_change4 -->
+		<dependency>
+			<groupId>decentralized-identity</groupId>
+			<artifactId>jsonld-common-java</artifactId>
+			<version>0.5.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
