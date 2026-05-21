@@ -25,11 +25,36 @@ public class LanguageUtility {
 	public String getLangCodeFromNativeName(String nativeName) {
 		String langCode=null;
 		try {
-			ResponseWrapper<LanguageResponseDto> response = (ResponseWrapper) restClient.getApi(ApiName.LANGUAGE,null, "", "", ResponseWrapper.class);
+//			ResponseWrapper<LanguageResponseDto> response = (ResponseWrapper) restClient.getApi(ApiName.LANGUAGE,null, "", "", ResponseWrapper.class);
+			ResponseWrapper<LanguageResponseDto> response =
+					(ResponseWrapper) restClient.getApi(
+							ApiName.LANGUAGE,
+							null,
+							"",
+							"",
+							ResponseWrapper.class
+					);
+//			if (response.getErrors() != null && response.getErrors().size() > 0) {
+//				response.getErrors().stream().forEach(r -> {
+//					logger.error("LanguageUtility::getLangCodeFromNativeName():: error with error message " + r.getMessage());
+//				});
+//			}
 
-			if (response.getErrors() != null && response.getErrors().size() > 0) {
-				response.getErrors().stream().forEach(r -> {
-					logger.error("LanguageUtility::getLangCodeFromNativeName():: error with error message " + r.getMessage());
+			if (response == null) {
+				logger.error("Language API response is null");
+				throw new DigitalCardServiceException(
+						"Language API response is null"
+				);
+			}
+
+			if (response.getErrors() != null &&
+					response.getErrors().size() > 0) {
+
+				response.getErrors().forEach(r -> {
+					logger.error(
+							"LanguageUtility::getLangCodeFromNativeName():: error : "
+									+ r.getMessage()
+					);
 				});
 			}
 
