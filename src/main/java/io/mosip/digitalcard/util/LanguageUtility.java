@@ -40,6 +40,7 @@ public class LanguageUtility {
 //				});
 //			}
 
+			// changed
 			if (response == null) {
 				logger.error("Language API response is null");
 				throw new DigitalCardServiceException(
