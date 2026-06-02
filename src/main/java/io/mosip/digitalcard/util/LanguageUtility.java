@@ -4,13 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.mosip.digitalcard.constant.ApiName;
 import io.mosip.digitalcard.dto.LanguageDto;
 import io.mosip.digitalcard.dto.LanguageResponseDto;
-import io.mosip.digitalcard.exception.ApisResourceAccessException;
 import io.mosip.digitalcard.exception.DigitalCardServiceException;
 import io.mosip.kernel.core.http.ResponseWrapper;
 import io.mosip.kernel.core.logger.spi.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import java.io.IOException;
 
 @Component
 public class LanguageUtility {
