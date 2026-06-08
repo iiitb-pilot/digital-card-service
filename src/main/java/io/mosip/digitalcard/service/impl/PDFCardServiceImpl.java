@@ -106,6 +106,10 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 	@Autowired
 	private CredentialsVerifier credentialsVerifier;
 
+	//for signature
+	@Value("${mosip.print.service.uincard.signature.required:true}")
+	private boolean isSignatureRequired;
+
 	@Value("${mosip.digitalcard.service.uincard.lowerleftx}")
 	private int lowerLeftX;
 
@@ -267,6 +271,10 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 		ByteArrayOutputStream out = null;
 		try {
 			out = (ByteArrayOutputStream) pdfGenerator.generate(in);
+			//for signature
+			logger.debug("Signature required - "+isSignatureRequired);
+			if(isSignatureRequired) {
+				logger.debug("Signature required inside true - "+isSignatureRequired);
 			PDFSignatureRequestDto request = new PDFSignatureRequestDto(lowerLeftX, lowerLeftY, upperRightX,
 					upperRightY, reason, 1, password);
 			request.setApplicationId("KERNEL");
@@ -296,6 +304,11 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 					SignatureResponseDto.class);
 
 			pdfSignatured = Base64.decodeBase64(signatureResponseDto.getData());
+			//for signature
+			} else {
+				logger.debug("Signature required inside false - "+isSignatureRequired);
+				pdfSignatured = out.toByteArray();
+			}
 
 		} catch (Exception e) {
 			logger.info("ERROR[] :{}",e);
