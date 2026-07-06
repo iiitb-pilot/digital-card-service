@@ -51,7 +51,7 @@ public class PrintInjiVcServiceImpl implements PrintInjiVcService {
     @Value("${inji.credential.configuration.id}")
     private String credentialConfigurationId;
 
-    @Value("${inji.tx.code}")
+    @Value("${inji.pre.auth.tx.code}")
     private String txCode;
 
     @Value("${inji.expires.in}")
