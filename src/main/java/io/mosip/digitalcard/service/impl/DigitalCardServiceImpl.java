@@ -137,6 +137,10 @@ public class DigitalCardServiceImpl implements DigitalCardService {
         String decryptedCredential = null;
         String password = null;
         String rid = null;
+        String firstName = "Gova";
+        String lastName = "Krish";
+        String email = null;
+        String phone = null;
         try {
             if (dataShareUrl != null) {
                 credential = restClient.getForObject(dataShareUrl, String.class);
@@ -144,27 +148,18 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             attributes.putAll(additionalAttributes);
 
             decryptedCredential = encryptionUtil.decryptData(credential);
-            logger.info("Decrypted Credential String: {}", decryptedCredential);
+            // logger.info("Decrypted Credential String: {}", decryptedCredential);
 
             JSONObject jsonObject = new org.json.JSONObject(decryptedCredential);
             logger.info("Decrypted Credential JSON Object: {}", jsonObject);
 
             // This is the line we are sending this data to inji print service controller
-            org.json.JSONObject credentialSubject = jsonObject.getJSONObject("credentialSubject");
+            // org.json.JSONObject credentialSubject = jsonObject.getJSONObject("credentialSubject");
 
-            String firstName = credentialSubject
-                    .getJSONArray("firstName")
-                    .getJSONObject(0)
-                    .getString("value");
-
-            String lastName = credentialSubject
-                    .getJSONArray("lastName")
-                    .getJSONObject(0)
-                    .getString("value");
-
-            String email = credentialSubject.getString("email");
-
-            String phone = credentialSubject.getString("phone");
+            JSONObject decryptedCredentialJson = jsonObject.getJSONObject("credentialSubject");
+            rid = getRid(decryptedCredentialJson.get("id"));
+            phone = getRid(decryptedCredentialJson.get("phone"));
+            email = getRid(decryptedCredentialJson.get("email"));
 
             logger.info("First Name : {}", firstName);
             logger.info("Last Name : {}", lastName);
@@ -179,10 +174,6 @@ public class DigitalCardServiceImpl implements DigitalCardService {
 
             logger.info("Inji VC Response : {}", injiVcResponse);
 
-            //
-
-            JSONObject decryptedCredentialJson = jsonObject.getJSONObject("credentialSubject");
-            rid = getRid(decryptedCredentialJson.get("id"));
             attributes.put(IdType.RID.toString(), rid);
             // sets additional attributes for all templates.
             setTemplateAttributes(decryptedCredentialJson, attributes);
