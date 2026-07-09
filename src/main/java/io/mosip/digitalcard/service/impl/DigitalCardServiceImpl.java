@@ -137,10 +137,7 @@ public class DigitalCardServiceImpl implements DigitalCardService {
         String decryptedCredential = null;
         String password = null;
         String rid = null;
-        String firstName = "Gova";
-        String lastName = "Krish";
-        String email = null;
-        String phone = null;
+
         try {
             if (dataShareUrl != null) {
                 credential = restClient.getForObject(dataShareUrl, String.class);
@@ -153,26 +150,21 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             JSONObject jsonObject = new org.json.JSONObject(decryptedCredential);
             logger.info("Decrypted Credential JSON Object: {}", jsonObject);
 
-            // This is the line we are sending this data to inji print service controller
-            // org.json.JSONObject credentialSubject = jsonObject.getJSONObject("credentialSubject");
+
 
             JSONObject decryptedCredentialJson = jsonObject.getJSONObject("credentialSubject");
             rid = getRid(decryptedCredentialJson.get("id"));
-            phone = getRid(decryptedCredentialJson.get("phone"));
-            email = getRid(decryptedCredentialJson.get("email"));
 
-            logger.info("First Name : {}", firstName);
-            logger.info("Last Name : {}", lastName);
-            logger.info("Email : {}", email);
-            logger.info("Phone : {}", phone);
 
-            String injiVcResponse = printInjiVcService.generatePreAuthorizedCode(
-                    firstName,
-                    lastName,
-                    email,
-                    phone);
 
-            logger.info("Inji VC Response : {}", injiVcResponse);
+
+//            String injiVcResponse = printInjiVcService.generatePreAuthorizedCode(
+//                    firstName,
+//                    lastName,
+//                    email,
+//                    phone);
+//
+//            logger.info("Inji VC Response : {}", injiVcResponse);
 
             attributes.put(IdType.RID.toString(), rid);
             // sets additional attributes for all templates.
