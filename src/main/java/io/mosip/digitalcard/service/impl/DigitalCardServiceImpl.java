@@ -10,9 +10,7 @@ import io.mosip.digitalcard.dto.*;
 import io.mosip.digitalcard.entity.DigitalCardTransactionEntity;
 import io.mosip.digitalcard.exception.*;
 import io.mosip.digitalcard.repositories.DigitalCardTransactionRepository;
-import io.mosip.digitalcard.service.CardGeneratorService;
-import io.mosip.digitalcard.service.DigitalCardService;
-import io.mosip.digitalcard.service.EmailHelperService;
+import io.mosip.digitalcard.service.*;
 import io.mosip.digitalcard.util.*;
 import io.mosip.digitalcard.websub.CredentialStatusEvent;
 import io.mosip.digitalcard.websub.StatusEvent;
@@ -36,6 +34,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
+
 
 /**
  * The DigitalCardServiceImpl.
@@ -127,6 +126,12 @@ public class DigitalCardServiceImpl implements DigitalCardService {
 
     private Logger logger = DigitalCardRepoLogger.getLogger(DigitalCardController.class);
 
+    @Autowired
+    private PrintInjiVcService printInjiVcService;
+
+    @Autowired
+    private PixelPassService pixelPassService;
+
 
     public void generateDigitalCard(String credential, String credentialType,String dataShareUrl,String eventId,String transactionId,Map<String,Object> additionalAttributes) {
         boolean isGenerated = false;
@@ -134,6 +139,10 @@ public class DigitalCardServiceImpl implements DigitalCardService {
         String decryptedCredential=null;
         String password=null;
         String rid=null;
+        String firstName=null;
+        String lastName=null;
+        String email=null;
+        String phone=null;
         try {
             if (dataShareUrl != null) {
                 credential = restClient.getForObject(dataShareUrl, String.class);
@@ -144,6 +153,45 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             JSONObject decryptedCredentialJson = jsonObject.getJSONObject("credentialSubject");
             logger.info("DECRYPTED JSON RESPONSE {}", decryptedCredentialJson);
             rid=getRid(decryptedCredentialJson.get("id"));
+
+            // First Name
+            org.json.simple.JSONArray firstNameArray =
+                    (org.json.simple.JSONArray) decryptedCredentialJson.get("firstName");
+
+            org.json.simple.JSONObject firstNameObj =
+                    (org.json.simple.JSONObject) firstNameArray.get(0);
+
+            firstName = (String) firstNameObj.get("value");
+
+            // Last Name
+            org.json.simple.JSONArray lastNameArray =
+                    (org.json.simple.JSONArray) decryptedCredentialJson.get("lastName");
+
+            org.json.simple.JSONObject lastNameObj =
+                    (org.json.simple.JSONObject) lastNameArray.get(0);
+
+            lastName = (String) lastNameObj.get("value");
+            email=getRid(decryptedCredentialJson.get("email"));
+            phone=getRid(decryptedCredentialJson.get("phone"));
+
+            System.out.println("IN Digital Service IMPL");
+            System.out.println("First Name : " + firstName);
+            System.out.println("Last Name  : " + lastName);
+            System.out.println("Email      : " + email);
+            System.out.println("Phone      : " + phone);
+            System.out.println("==================================");
+
+            // Sending data to printInjiVcService
+            String vc = printInjiVcService.generatePreAuthorizedCode(
+                    firstName,
+                    lastName,
+                    email,
+                    phone);
+
+            // Sending the Returning VC to Pixelpass
+            String qr = pixelPassService.generateQRCode(vc);
+
+
             attributes.put(IdType.RID.toString(), rid);
             //sets additional attributes for all templates.
             setTemplateAttributes(decryptedCredentialJson, attributes);
