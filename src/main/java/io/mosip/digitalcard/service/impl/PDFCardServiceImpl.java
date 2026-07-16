@@ -15,6 +15,7 @@ import io.mosip.digitalcard.exception.DigitalCardServiceException;
 import io.mosip.digitalcard.exception.IdentityNotFoundException;
 import io.mosip.digitalcard.repositories.DigitalCardTransactionRepository;
 import io.mosip.digitalcard.service.CardGeneratorService;
+import io.mosip.digitalcard.service.PixelPassService;
 import io.mosip.digitalcard.util.*;
 import io.mosip.kernel.biometrics.spi.CbeffUtil;
 import io.mosip.kernel.core.exception.ServiceError;
@@ -106,6 +107,9 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 	@Autowired
 	private CredentialsVerifier credentialsVerifier;
 
+	@Autowired
+	private PixelPassService pixelPassService;
+
 	//for signature
 	@Value("${mosip.print.service.uincard.signature.required:true}")
 	private boolean isSignatureRequired;
@@ -142,7 +146,7 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 	 * @see io.mosip.digitalcard.service.PDFService#
 	 */
 	public byte[] generateCard(org.json.JSONObject decryptedCredentialJson, String credentialType,
-							   String password, Map<String, Object>  attributes, String templateLang) throws Exception {
+							   String password, Map<String, Object>  attributes, String templateLang,String vc) throws Exception {
 		logger.debug("PDFServiceImpl::getDocuments()::entry");
 		boolean isPhotoSet=false;
 		String individualBio = null;
@@ -160,7 +164,7 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 				templateTypeCode = attributes.get(DigitalCardConstants.TEMPLATE_TYPE_CODE).toString();
 			}
 			if (credentialType.equalsIgnoreCase("qrcode")) {
-				boolean isQRcodeSet = setQrCode(decryptedCredentialJson.toString(), attributes,isPhotoSet);
+				boolean isQRcodeSet = setQrCode(vc, attributes,isPhotoSet);
 				InputStream uinArtifact = templateGenerator.getTemplate(templateTypeCode, attributes, templateLang);
 				pdfbytes = generateUinCard(uinArtifact, password);
 			} else {
@@ -168,7 +172,7 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 					logger.debug(DigitalCardServiceErrorCodes.APPLICANT_PHOTO_NOT_SET.name());
 				}
 				logger.info("attributes count before setTemplateAttributes: {}",attributes.size());
-				boolean isQRcodeSet = setQrCode(decryptedCredentialJson.toString(), attributes,isPhotoSet);
+				boolean isQRcodeSet = setQrCode(vc, attributes,isPhotoSet);
 				if (!isQRcodeSet) {
 					logger.debug(DigitalCardServiceErrorCodes.QRCODE_NOT_SET.name());
 				}
@@ -216,17 +220,22 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 	 *                                                            occurred.
 	 * @throws QrcodeGenerationException
 	 */
-	private boolean setQrCode(String qrString, Map<String, Object> attributes,boolean isPhotoSet)
+	private boolean setQrCode(String vc, Map<String, Object> attributes,boolean isPhotoSet)
 			throws IOException, QrcodeGenerationException {
 		boolean isQRCodeSet = false;
-		JSONObject qrJsonObj = objectMapper.readValue(qrString, JSONObject.class);
-		if(isPhotoSet) {
-			qrJsonObj.remove("biometrics");
-		}
-		byte[] qrCodeBytes = qrCodeGenerator.generateQrCode(qrJsonObj.toString(), QrVersion.V30);
-		if (qrCodeBytes != null) {
-			String imageString = Base64.encodeBase64String(qrCodeBytes);
-			attributes.put(QRCODE, "data:image/png;base64," + imageString);
+//		JSONObject qrJsonObj = objectMapper.readValue(vc, JSONObject.class);
+//		if(isPhotoSet) {
+//			qrJsonObj.remove("biometrics");
+//		}
+//		byte[] qrCodeBytes = qrCodeGenerator.generateQrCode(qrJsonObj.toString(), QrVersion.V30);
+//		String qr = pixelPassService.generateQRCode(qrJsonObj.toString());
+
+		String qr = pixelPassService.generateQRCode(vc);
+
+		if (qr != null) {
+//			String imageString = Base64.encodeBase64String(qrCodeBytes); // no need
+//			attributes.put(QRCODE, "data:image/png;base64," + imageString);
+			attributes.put(QRCODE, qr);
 			isQRCodeSet = true;
 		}
 

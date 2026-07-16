@@ -189,7 +189,7 @@ public class DigitalCardServiceImpl implements DigitalCardService {
                     phone);
 
             // Sending the Returning VC to Pixelpass
-            String qr = pixelPassService.generateQRCode(vc);
+//            String qr = pixelPassService.generateQRCode(vc);
 
 
             attributes.put(IdType.RID.toString(), rid);
@@ -217,7 +217,7 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             if (isPasswordProtected) {
                 password = getPassword(decryptedCredentialJson, templateLangCode);
             }
-            byte[] pdfBytes=pdfCardServiceImpl.generateCard(decryptedCredentialJson, credentialType,password,attributes, templateLangCode);
+            byte[] pdfBytes=pdfCardServiceImpl.generateCard(decryptedCredentialJson, credentialType,password,attributes, templateLangCode,vc);
             digitalCardStatusUpdate(transactionId,pdfBytes,credentialType,rid);
             // Send digital Card Pdf to Email
             if (isEmailEnabled) {
