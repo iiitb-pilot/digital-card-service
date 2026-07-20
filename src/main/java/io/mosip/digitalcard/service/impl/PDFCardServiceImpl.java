@@ -234,8 +234,8 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 
 		if (qr != null) {
 //			String imageString = Base64.encodeBase64String(qrCodeBytes); // no need
-//			attributes.put(QRCODE, "data:image/png;base64," + imageString);
-			attributes.put(QRCODE, qr);
+			attributes.put(QRCODE, "data:image/png;base64," + qr);
+//			attributes.put(QRCODE, qr);
 			logger.info("==========================================");
 			logger.info("QR Length : {}", qr.length());
 
