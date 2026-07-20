@@ -247,6 +247,7 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 			logger.info("Attributes contains QrCode : {}", attributes.containsKey("QrCode"));
 			logger.info("QrCode Attribute : {}", attributes.get("QrCode"));
 			logger.info("==========================================");
+			logger.info("QR IMAGE : {}", qr);
 
 			isQRCodeSet = true;
 		}
