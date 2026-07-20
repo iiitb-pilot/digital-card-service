@@ -155,24 +155,17 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             rid=getRid(decryptedCredentialJson.get("id"));
 
             // First Name
-            org.json.simple.JSONArray firstNameArray =
-                    (org.json.simple.JSONArray) decryptedCredentialJson.get("firstName");
-
-            org.json.simple.JSONObject firstNameObj =
-                    (org.json.simple.JSONObject) firstNameArray.get(0);
-
-            firstName = (String) firstNameObj.get("value");
+            org.json.JSONArray firstNameArray = decryptedCredentialJson.getJSONArray("firstName");
+            org.json.JSONObject firstNameObj = firstNameArray.getJSONObject(0);
+            firstName = firstNameObj.getString("value");
 
             // Last Name
-            org.json.simple.JSONArray lastNameArray =
-                    (org.json.simple.JSONArray) decryptedCredentialJson.get("lastName");
+            org.json.JSONArray lastNameArray = decryptedCredentialJson.getJSONArray("lastName");
+            org.json.JSONObject lastNameObj = lastNameArray.getJSONObject(0);
+            lastName = lastNameObj.getString("value");
 
-            org.json.simple.JSONObject lastNameObj =
-                    (org.json.simple.JSONObject) lastNameArray.get(0);
-
-            lastName = (String) lastNameObj.get("value");
-            email=getRid(decryptedCredentialJson.get("email"));
-            phone=getRid(decryptedCredentialJson.get("phone"));
+            email = decryptedCredentialJson.getString("email");
+            phone = decryptedCredentialJson.getString("phone");
 
             System.out.println("IN Digital Service IMPL");
             System.out.println("First Name : " + firstName);
