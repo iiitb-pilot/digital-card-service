@@ -99,7 +99,7 @@ public class PrintInjiVcServiceImpl implements PrintInjiVcService {
             String offerId = decodedUri.substring(decodedUri.lastIndexOf("/") + 1);
 
             // Print Offer ID
-            logger.info("Offer ID (API-1) : {}", offerId);
+//            logger.info("Offer ID (API-1) : {}", offerId);
             // Call API-2 automatically
             return getCredentialOffer(offerId);
 
@@ -129,7 +129,7 @@ public class PrintInjiVcServiceImpl implements PrintInjiVcService {
                     .asText();
 
             // Print Pre-Authorized Code
-            logger.info("Pre-Authorized Code (API-2): {}", preAuthorizedCode);
+//            logger.info("Pre-Authorized Code (API-2): {}", preAuthorizedCode);
 
             return exchangeCodeForToken(preAuthorizedCode);
 
@@ -166,8 +166,8 @@ public class PrintInjiVcServiceImpl implements PrintInjiVcService {
             String cNonce = jsonNode.get("c_nonce").asText();
 
             // Print API-3 Response
-            logger.info("Access Token (API-3): {}", accessToken);
-            logger.info("c_nonce (API-3): {}", cNonce);
+//            logger.info("Access Token (API-3): {}", accessToken);
+//            logger.info("c_nonce (API-3): {}", cNonce);
 
             return issueCredential(accessToken, cNonce);
 
@@ -216,7 +216,7 @@ public class PrintInjiVcServiceImpl implements PrintInjiVcService {
 
             String proofJwt = signedJWT.serialize();
 
-            logger.info("Proof JWT (API-4): {}", proofJwt);
+//            logger.info("Proof JWT (API-4): {}", proofJwt);
 
             return proofJwt;
 
@@ -274,7 +274,7 @@ public class PrintInjiVcServiceImpl implements PrintInjiVcService {
             // Convert only the credential object into JSON string
             String vc = objectMapper.writeValueAsString(credentialNode);
 
-            logger.info("API-4 Credential Response : {}", vc);
+//            logger.info("API-4 Credential Response : {}", vc);
 
             return vc;
 

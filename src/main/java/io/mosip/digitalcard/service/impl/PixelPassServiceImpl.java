@@ -32,7 +32,7 @@ public class PixelPassServiceImpl implements PixelPassService {
 
 
             String imageSrc = "data:image/png;base64," + base64PngImage;
-            logger.info("QR Image Src : {}", imageSrc);
+//            logger.info("QR Image Src : {}", imageSrc);
             return base64PngImage;
 
         } catch (Throwable e) {
