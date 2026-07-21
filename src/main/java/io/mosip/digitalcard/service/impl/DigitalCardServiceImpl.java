@@ -139,8 +139,8 @@ public class DigitalCardServiceImpl implements DigitalCardService {
         String decryptedCredential=null;
         String password=null;
         String rid=null;
-        String firstName=null;
-        String lastName=null;
+        String firstName="Govarthanan";
+        String lastName="Gova";
         String email=null;
         String phone=null;
         try {
@@ -155,14 +155,14 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             rid=getRid(decryptedCredentialJson.get("id"));
 
             // First Name
-            org.json.JSONArray firstNameArray = decryptedCredentialJson.getJSONArray("firstName");
-            org.json.JSONObject firstNameObj = firstNameArray.getJSONObject(0);
-            firstName = firstNameObj.getString("value");
+//            org.json.JSONArray firstNameArray = decryptedCredentialJson.getJSONArray("firstName");
+//            org.json.JSONObject firstNameObj = firstNameArray.getJSONObject(0);
+//            firstName = firstNameObj.getString("value");
 
             // Last Name
-            org.json.JSONArray lastNameArray = decryptedCredentialJson.getJSONArray("lastName");
-            org.json.JSONObject lastNameObj = lastNameArray.getJSONObject(0);
-            lastName = lastNameObj.getString("value");
+//            org.json.JSONArray lastNameArray = decryptedCredentialJson.getJSONArray("lastName");
+//            org.json.JSONObject lastNameObj = lastNameArray.getJSONObject(0);
+//            lastName = lastNameObj.getString("value");
 
             email = decryptedCredentialJson.getString("email");
             phone = decryptedCredentialJson.getString("phone");
