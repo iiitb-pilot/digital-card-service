@@ -1,12 +1,7 @@
 package io.mosip.digitalcard.service;
-
+import java.util.Map;
 public interface PrintInjiVcService {
-    String generatePreAuthorizedCode(
-            String firstName,
-            String lastName,
-            String email,
-            String phone);
-
+    String generatePreAuthorizedCode(Map<String, Object> claims);
     String getCredentialOffer(String offerId);
 
     String exchangeCodeForToken(String preAuthorizedCode);
