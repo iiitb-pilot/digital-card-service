@@ -8,15 +8,12 @@ import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jose.*;
-import java.util.Arrays;
+
+import java.util.*;
+
 import com.nimbusds.jose.jwk.RSAKey;
 import io.mosip.digitalcard.util.DigitalCardRepoLogger;
 import io.mosip.kernel.core.logger.spi.Logger;
-import java.util.Date;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -60,19 +57,9 @@ public class PrintInjiVcServiceImpl implements PrintInjiVcService {
     private Long expiresIn;
 
     @Override
-    public String generatePreAuthorizedCode(String firstName,
-                                            String lastName,
-                                            String email,
-                                            String phone) {
+    public String generatePreAuthorizedCode(Map<String, Object> claims) {
 
         try {
-
-            Map<String, Object> claims = new HashMap<>();
-            claims.put("firstName", firstName);
-            claims.put("lastName", lastName);
-            claims.put("email", email);
-            claims.put("phone", phone);
-
             Map<String, Object> request = new HashMap<>();
             request.put("credential_configuration_id", credentialConfigurationId);
             request.put("claims", claims);

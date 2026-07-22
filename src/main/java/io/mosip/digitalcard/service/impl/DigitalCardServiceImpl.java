@@ -23,6 +23,7 @@ import io.mosip.kernel.core.util.DateUtils2;
 import io.mosip.vercred.CredentialsVerifier;
 import org.json.JSONObject;
 import org.json.simple.JSONArray;
+//import org.json.JSONArray;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,10 +140,19 @@ public class DigitalCardServiceImpl implements DigitalCardService {
         String decryptedCredential=null;
         String password=null;
         String rid=null;
-        String firstName=null;
-        String lastName=null;
+        String fullName=null;
+        String dob=null;
         String email=null;
         String phone=null;
+        String UIN=null;
+        String VID=null;
+        String addressLine1=null;
+        String addressLine2=null;
+        String addressLine3=null;
+        String region=null;
+        String city=null;
+        String postalCode=null;
+        String address=null;
         try {
             if (dataShareUrl != null) {
                 credential = restClient.getForObject(dataShareUrl, String.class);
@@ -154,35 +164,123 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             logger.info("DECRYPTED JSON RESPONSE {}", decryptedCredentialJson);
             rid=getRid(decryptedCredentialJson.get("id"));
 
-//             First Name
+//          fullName
             org.json.JSONArray fullNameArray = decryptedCredentialJson.getJSONArray("fullName");
             org.json.JSONObject fullNameObj = fullNameArray.getJSONObject(0);
-            firstName = fullNameObj.getString("value");
+            fullName = fullNameObj.getString("value");
 
-            // Last Name
-//            org.json.JSONArray lastNameArray = decryptedCredentialJson.getJSONArray("lastName");
-//            org.json.JSONObject lastNameObj = lastNameArray.getJSONObject(0);
-//            lastName = lastNameObj.getString("value");
-
+            dob = decryptedCredentialJson.getString("dob");
             email = decryptedCredentialJson.getString("email");
             phone = decryptedCredentialJson.getString("phone");
+            UIN = decryptedCredentialJson.getString("UIN");
+            VID = decryptedCredentialJson.getString("VID");
+
+//          addressLine1
+            org.json.JSONArray addressLine1Array = decryptedCredentialJson.getJSONArray("addressLine1");
+            org.json.JSONObject addressLine1Obj = addressLine1Array.getJSONObject(0);
+            addressLine1 = addressLine1Obj.getString("value");
+
+//          addressLine2 (Optional)
+            if (decryptedCredentialJson.has("addressLine2") && !decryptedCredentialJson.isNull("addressLine2")) {
+                org.json.JSONArray addressLine2Array = decryptedCredentialJson.getJSONArray("addressLine2");
+                if (addressLine2Array.length() > 0) {
+                    addressLine2 = addressLine2Array.getJSONObject(0).optString("value", null);
+                }
+            }
+
+//          addressLine3 (Optional)
+            if (decryptedCredentialJson.has("addressLine3") && !decryptedCredentialJson.isNull("addressLine3")) {
+                org.json.JSONArray addressLine3Array = decryptedCredentialJson.getJSONArray("addressLine3");
+                if (addressLine3Array.length() > 0) {
+                    addressLine3 = addressLine3Array.getJSONObject(0).optString("value", null);
+                }
+            }
+
+//          region (Optional)
+            if (decryptedCredentialJson.has("region") && !decryptedCredentialJson.isNull("region")) {
+                org.json.JSONArray regionArray = decryptedCredentialJson.getJSONArray("region");
+                if (regionArray.length() > 0) {
+                    region = regionArray.getJSONObject(0).optString("value", null);
+                }
+            }
+
+//          city (Optional)
+            if (decryptedCredentialJson.has("city") && !decryptedCredentialJson.isNull("city")) {
+                org.json.JSONArray cityArray = decryptedCredentialJson.getJSONArray("city");
+                if (cityArray.length() > 0) {
+                    city = cityArray.getJSONObject(0).optString("value", null);
+                }
+            }
+
+            postalCode = decryptedCredentialJson.getString("postalCode");
+
+            // build address
+            StringBuilder addressBuilder = new StringBuilder();
+
+            if (addressLine1 != null && !addressLine1.trim().isEmpty()) {
+                addressBuilder.append(addressLine1);
+            }
+
+            if (addressLine2 != null && !addressLine2.trim().isEmpty()) {
+                if (!addressBuilder.isEmpty()) {
+                    addressBuilder.append(",");
+                }
+                addressBuilder.append(addressLine2);
+            }
+
+            if (addressLine3 != null && !addressLine3.trim().isEmpty()) {
+                if (!addressBuilder.isEmpty()) {
+                    addressBuilder.append(",");
+                }
+                addressBuilder.append(addressLine3);
+            }
+
+            if (region != null && !region.trim().isEmpty()) {
+                if (!addressBuilder.isEmpty()) {
+                    addressBuilder.append(",");
+                }
+                addressBuilder.append(region);
+            }
+
+            if (city != null && !city.trim().isEmpty()) {
+                if (!addressBuilder.isEmpty()) {
+                    addressBuilder.append(",");
+                }
+                addressBuilder.append(city);
+            }
+
+            if (postalCode != null && !postalCode.trim().isEmpty()) {
+                if (!addressBuilder.isEmpty()) {
+                    addressBuilder.append(",");
+                }
+                addressBuilder.append(postalCode);
+            }
+
+            address = addressBuilder.toString();
+
 
             System.out.println("IN Digital Service IMPL");
-            System.out.println("First Name : " + firstName);
-            System.out.println("Last Name  : " + lastName);
+            System.out.println("Full Name : " + fullName);
             System.out.println("Email      : " + email);
             System.out.println("Phone      : " + phone);
+            System.out.println("dob : " + dob);
+            System.out.println("UIN      : " + UIN);
+            System.out.println("VID      : " + VID);
+            System.out.println("address : " + address);
             System.out.println("==================================");
 
             // Sending data to printInjiVcService
-            String vc = printInjiVcService.generatePreAuthorizedCode(
-                    firstName,
-                    lastName,
-                    email,
-                    phone);
+            Map<String, Object> claims = new LinkedHashMap<>();
 
-            // Sending the Returning VC to Pixelpass
-//            String qr = pixelPassService.generateQRCode(vc);
+            claims.put("fullName", fullName);
+            claims.put("dob", dob);
+            claims.put("email", email);
+            claims.put("phone", phone);
+            claims.put("UIN", UIN);
+            claims.put("VID", VID);
+            claims.put("address", address);
+
+            String vc = printInjiVcService.generatePreAuthorizedCode(claims);
 
 
             attributes.put(IdType.RID.toString(), rid);
@@ -232,6 +330,7 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             throw new DigitalCardServiceException(DigitalCardServiceErrorCodes.DIGITAL_CARD_NOT_GENERATED.getErrorCode(),DigitalCardServiceErrorCodes.DIGITAL_CARD_NOT_GENERATED.getErrorMessage());
         }
     }
+
 
     @Override
     public DigitalCardStatusResponseDto getDigitalCard(String rid) {
