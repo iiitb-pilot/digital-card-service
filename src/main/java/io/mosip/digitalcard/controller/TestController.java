@@ -37,13 +37,13 @@ public class TestController {
         System.out.println("Phone      : " + phone);
         System.out.println("==================================");
 
-        String vc = printInjiVcService.generatePreAuthorizedCode(
-                firstName,
-                lastName,
-                email,
-                phone);
-
-        String qr = pixelPassService.generateQRCode(vc);
+//        String vc = printInjiVcService.generatePreAuthorizedCode(
+//                firstName,
+//                lastName,
+//                email,
+//                phone);
+//
+//        String qr = pixelPassService.generateQRCode(vc);
 
         return "Success Gova";
     }
