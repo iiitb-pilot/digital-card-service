@@ -87,6 +87,7 @@ public class PDFCardServiceImplTest {
     private Utility utility;
 
     private static final String FACE = "Face";
+    private static final String VC = "sampleVC";
 
     @Mock
     CbeffUtil cbeffutil;
@@ -113,7 +114,7 @@ public class PDFCardServiceImplTest {
         lenient().when(templateGenerator.getTemplate(anyString(), anyMap(), anyString())).thenReturn(mockInputStream);
 
         try {
-            byte[] result = pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes,"eng");
+            byte[] result = pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes,"eng", VC);
 
             assertNotNull(result);
             verify(templateGenerator, times(1)).getTemplate(anyString(), anyMap(), anyString());
@@ -158,7 +159,7 @@ public class PDFCardServiceImplTest {
         lenient().when(templateGenerator.getTemplate(anyString(), anyMap(), anyString()))
                 .thenReturn(null);
 
-        pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes,"eng");
+        pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes,"eng", VC);
     }
 
     @Test
@@ -251,7 +252,7 @@ public class PDFCardServiceImplTest {
         when(objectMapper.writeValueAsString(any())).thenReturn("{}");
         when(objectMapper.readValue(anyString(), eq(SignatureResponseDto.class))).thenReturn(signatureResponseDto);
 
-        byte[] result = pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes,"eng");
+        byte[] result = pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes,"eng", VC);
         assertNotNull(result);
     }
 
@@ -283,7 +284,7 @@ public class PDFCardServiceImplTest {
 
         DigitalCardServiceException ex = assertThrows(
                 DigitalCardServiceException.class,
-                () -> pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes,"eng")
+                () -> pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes,"eng", VC)
         );
 
         String expectedErrorCode = DigitalCardServiceErrorCodes.DATASHARE_EXCEPTION.getErrorCode();
@@ -459,7 +460,7 @@ public class PDFCardServiceImplTest {
         when(objectMapper.writeValueAsString(any())).thenReturn("{}");
         when(objectMapper.readValue(anyString(), eq(SignatureResponseDto.class))).thenReturn(signatureResponseDto);
 
-        byte[] result = pdfCardService.generateCard(decrypted, credentialType, password, additional,"eng");
+        byte[] result = pdfCardService.generateCard(decrypted, credentialType, password, additional,"eng", VC);
         assertNotNull(result);
 
         org.mockito.ArgumentCaptor<String> typeCaptor = org.mockito.ArgumentCaptor.forClass(String.class);
