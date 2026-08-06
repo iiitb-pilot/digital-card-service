@@ -32,17 +32,17 @@ public class PixelPassServiceImpl implements PixelPassService {
 
 
             String imageSrc = "data:image/png;base64," + base64PngImage;
-//            logger.info("QR Image Src : {}", imageSrc);
+            logger.info("QR Image Src : {}", imageSrc);
             return base64PngImage;
 
         } catch (Throwable e) {
 
             logger.error("Error while generating QR Code", e);
-
-            System.err.println("==========================================");
-            System.err.println("PixelPass Exception:");
+//
+//            System.err.println("==========================================");
+//            System.err.println("PixelPass Exception:");
             e.printStackTrace();
-            System.err.println("==========================================");
+//            System.err.println("==========================================");
 
             throw new RuntimeException("Failed to generate QR Code", e);
         }
