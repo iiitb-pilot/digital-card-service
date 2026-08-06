@@ -182,7 +182,7 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             decryptedCredential = encryptionUtil.decryptData(credential);
             JSONObject jsonObject = new org.json.JSONObject(decryptedCredential);
             JSONObject decryptedCredentialJson = jsonObject.getJSONObject("credentialSubject");
-//            logger.info("DECRYPTED JSON RESPONSE {}", decryptedCredentialJson);
+            logger.info("DECRYPTED JSON RESPONSE {}", decryptedCredentialJson);
             rid=getRid(decryptedCredentialJson.get("id"));
 
 //          fullName
@@ -300,17 +300,6 @@ public class DigitalCardServiceImpl implements DigitalCardService {
 
             address = addressBuilder.toString();
 
-
-//            System.out.println("IN Digital Service IMPL");
-//            System.out.println("Full Name : " + fullName);
-//            System.out.println("Email      : " + email);
-//            System.out.println("Phone      : " + phone);
-//            System.out.println("dob : " + dob);
-//            System.out.println("UIN      : " + UIN);
-//            System.out.println("VID      : " + VID);
-//            System.out.println("address : " + address);
-//            System.out.println("==================================");
-
             // Sending data to printInjiVcService
 
             Map<String, Object> claims = new LinkedHashMap<>();
@@ -328,11 +317,11 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             //sets additional attributes for all templates.
             setTemplateAttributes(decryptedCredentialJson, attributes);
             String prefLangAttr = (String) attributes.get(userPreferredLanguageAttribute);
-//            logger.info("prefLangAttr {}", prefLangAttr);
+            logger.info("prefLangAttr {}", prefLangAttr);
 
             String templateLangCode = languageUtility.getLangCodeFromNativeName(prefLangAttr);
-//            logger.info("templateLangCode: {}, defaultTplLangCode: {}", templateLangCode, defaultTplLangCode);
-//            logger.info("Additional Attributes: {}", attributes);
+            logger.info("templateLangCode: {}, defaultTplLangCode: {}", templateLangCode, defaultTplLangCode);
+            logger.info("Additional Attributes: {}", attributes);
             if (!StringUtils.hasText(templateLangCode)) {
                 templateLangCode = defaultTplLangCode;
             }
