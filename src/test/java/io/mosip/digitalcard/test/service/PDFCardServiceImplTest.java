@@ -101,6 +101,7 @@ public class PDFCardServiceImplTest {
         decryptedCredentialJson.put("isPhotoSet",isPhotoSet);
         String credentialType = "qrcode";
         String password = "testPassword";
+        String vc = "injivc";
         Map<String, Object> additionalAttributes = new HashMap<>();
         additionalAttributes.put("TEMPLATE_TYPE_CODE", "templateTypeCode");
         Map<String, Object> attributes = new LinkedHashMap<>();
@@ -113,7 +114,7 @@ public class PDFCardServiceImplTest {
         lenient().when(templateGenerator.getTemplate(anyString(), anyMap(), anyString())).thenReturn(mockInputStream);
 
         try {
-            byte[] result = pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes,"eng");
+            byte[] result = pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes,"eng" , vc);
 
             assertNotNull(result);
             verify(templateGenerator, times(1)).getTemplate(anyString(), anyMap(), anyString());
@@ -127,7 +128,7 @@ public class PDFCardServiceImplTest {
         org.json.JSONObject decryptedCredentialJson = new org.json.JSONObject();
         decryptedCredentialJson.put("UIN", "1234567890");
         decryptedCredentialJson.put("isPhotoSet", false);
-
+        String vc = "injivc";
         String credentialType = "pdf";
         String password = "pwd";
         Map<String, Object> additionalAttributes = new HashMap<>();
@@ -158,7 +159,7 @@ public class PDFCardServiceImplTest {
         lenient().when(templateGenerator.getTemplate(anyString(), anyMap(), anyString()))
                 .thenReturn(null);
 
-        pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes,"eng");
+        pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes,"eng", vc);
     }
 
     @Test
@@ -222,6 +223,7 @@ public class PDFCardServiceImplTest {
         decryptedCredentialJson.put("UIN", "u");
         String credentialType = "qrcode";
         String password = "pwd";
+        String vc = "injivc";
         Map<String, Object> additionalAttributes = new HashMap<>();
         additionalAttributes.put("templateTypeCode", "RPR_UIN_CARD_TEMPLATE");
 
@@ -251,7 +253,7 @@ public class PDFCardServiceImplTest {
         when(objectMapper.writeValueAsString(any())).thenReturn("{}");
         when(objectMapper.readValue(anyString(), eq(SignatureResponseDto.class))).thenReturn(signatureResponseDto);
 
-        byte[] result = pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes,"eng");
+        byte[] result = pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes,"eng", vc);
         assertNotNull(result);
     }
 
@@ -261,6 +263,7 @@ public class PDFCardServiceImplTest {
         decryptedCredentialJson.put("UIN", "u");
         String credentialType = "pdf";
         String password = "pwd";
+        String vc = "injivc";
         Map<String, Object> additionalAttributes = new HashMap<>();
 
         ReflectionTestUtils.setField(pdfCardService, "utility", utility);
@@ -283,7 +286,7 @@ public class PDFCardServiceImplTest {
 
         DigitalCardServiceException ex = assertThrows(
                 DigitalCardServiceException.class,
-                () -> pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes,"eng")
+                () -> pdfCardService.generateCard(decryptedCredentialJson, credentialType, password, additionalAttributes,"eng", vc)
         );
 
         String expectedErrorCode = DigitalCardServiceErrorCodes.DATASHARE_EXCEPTION.getErrorCode();
@@ -432,7 +435,7 @@ public class PDFCardServiceImplTest {
         String password = "pwd";
         Map<String, Object> additional = new HashMap<>();
         additional.put("templateTypeCode", "CUSTOM_TEMPLATE");
-
+        String vc = "injivc";
         JSONObject qrJsonObj = new JSONObject();
         qrJsonObj.put("UIN", "u");
         when(objectMapper.readValue(anyString(), eq(JSONObject.class))).thenReturn(qrJsonObj);
@@ -459,7 +462,7 @@ public class PDFCardServiceImplTest {
         when(objectMapper.writeValueAsString(any())).thenReturn("{}");
         when(objectMapper.readValue(anyString(), eq(SignatureResponseDto.class))).thenReturn(signatureResponseDto);
 
-        byte[] result = pdfCardService.generateCard(decrypted, credentialType, password, additional,"eng");
+        byte[] result = pdfCardService.generateCard(decrypted, credentialType, password, additional,"eng" , vc);
         assertNotNull(result);
 
         org.mockito.ArgumentCaptor<String> typeCaptor = org.mockito.ArgumentCaptor.forClass(String.class);

@@ -19,15 +19,15 @@ public class PixelPassServiceImpl implements PixelPassService {
 
         try {
 
-            logger.info("Starting PixelPass QR generation...");
+//            logger.info("Starting PixelPass QR generation...");
 
             PixelPass pixelpass = new PixelPass();
 
-            logger.info("PixelPass object created successfully.");
+//            logger.info("PixelPass object created successfully.");
 
             String base64PngImage = pixelpass.generateQRCode(vc, ECC.H, "");
 
-            logger.info("QR generated successfully.");
+//            logger.info("QR generated successfully.");
 
 
 
@@ -37,12 +37,12 @@ public class PixelPassServiceImpl implements PixelPassService {
 
         } catch (Throwable e) {
 
-            logger.error("Error while generating QR Code", e);
-
-            System.err.println("==========================================");
-            System.err.println("PixelPass Exception:");
+//            logger.error("Error while generating QR Code", e);
+//
+//            System.err.println("==========================================");
+//            System.err.println("PixelPass Exception:");
             e.printStackTrace();
-            System.err.println("==========================================");
+//            System.err.println("==========================================");
 
             throw new RuntimeException("Failed to generate QR Code", e);
         }

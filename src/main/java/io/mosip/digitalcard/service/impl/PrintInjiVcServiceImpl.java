@@ -56,6 +56,12 @@ public class PrintInjiVcServiceImpl implements PrintInjiVcService {
     @Value("${inji.expires.in}")
     private Long expiresIn;
 
+    @Value("#{'${inji.context.urls}'.split(',')}")
+    private List<String> contextUrls;
+
+    @Value("#{'${inji.credential.types}'.split(',')}")
+    private List<String> credentialTypes;
+
     @Override
     public String generatePreAuthorizedCode(Map<String, Object> claims) {
 
@@ -224,17 +230,8 @@ public class PrintInjiVcServiceImpl implements PrintInjiVcService {
             headers.set("Authorization", "Bearer " + accessToken);
 
             Map<String, Object> credentialDefinition = new HashMap<>();
-            credentialDefinition.put(
-                    "@context",
-                    Arrays.asList(
-                            "https://govarthananmosip.github.io/print-config/printcredential.json",
-                            "https://www.w3.org/2018/credentials/v1"));
-
-            credentialDefinition.put(
-                    "type",
-                    Arrays.asList(
-                            "VerifiableCredential",
-                            "printcredential"));
+            credentialDefinition.put("@context", contextUrls);
+            credentialDefinition.put("type", credentialTypes);
 
             Map<String, Object> proof = new HashMap<>();
             proof.put("proof_type", "jwt");

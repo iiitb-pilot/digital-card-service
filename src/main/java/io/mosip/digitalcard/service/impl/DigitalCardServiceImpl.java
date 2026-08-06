@@ -133,6 +133,27 @@ public class DigitalCardServiceImpl implements DigitalCardService {
     @Autowired
     private PixelPassService pixelPassService;
 
+    public final class CredentialConstants {
+
+        private CredentialConstants() {
+        }
+
+        public static final String FULL_NAME = "fullName";
+        public static final String DOB = "dob";
+        public static final String EMAIL = "email";
+        public static final String PHONE = "phone";
+        public static final String UIN = "UIN";
+        public static final String VID = "VID";
+
+        public static final String ADDRESS_LINE1 = "addressLine1";
+        public static final String ADDRESS_LINE2 = "addressLine2";
+        public static final String ADDRESS_LINE3 = "addressLine3";
+        public static final String REGION = "region";
+        public static final String CITY = "city";
+        public static final String POSTAL_CODE = "postalCode";
+
+    }
+
 
     public void generateDigitalCard(String credential, String credentialType,String dataShareUrl,String eventId,String transactionId,Map<String,Object> additionalAttributes) {
         boolean isGenerated = false;
@@ -161,58 +182,79 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             decryptedCredential = encryptionUtil.decryptData(credential);
             JSONObject jsonObject = new org.json.JSONObject(decryptedCredential);
             JSONObject decryptedCredentialJson = jsonObject.getJSONObject("credentialSubject");
-            logger.info("DECRYPTED JSON RESPONSE {}", decryptedCredentialJson);
+//            logger.info("DECRYPTED JSON RESPONSE {}", decryptedCredentialJson);
             rid=getRid(decryptedCredentialJson.get("id"));
 
 //          fullName
-            org.json.JSONArray fullNameArray = decryptedCredentialJson.getJSONArray("fullName");
+            org.json.JSONArray fullNameArray =
+                    decryptedCredentialJson.getJSONArray(CredentialConstants.FULL_NAME);
             org.json.JSONObject fullNameObj = fullNameArray.getJSONObject(0);
-            fullName = fullNameObj.getString("value");
-
-            dob = decryptedCredentialJson.getString("dob");
-            email = decryptedCredentialJson.getString("email");
-            phone = decryptedCredentialJson.getString("phone");
-            UIN = decryptedCredentialJson.getString("UIN");
-            VID = decryptedCredentialJson.getString("VID");
+            fullName = fullNameObj.getString(VALUE);
+            dob = decryptedCredentialJson.getString(CredentialConstants.DOB);
+            email = decryptedCredentialJson.getString(CredentialConstants.EMAIL);
+            phone = decryptedCredentialJson.getString(CredentialConstants.PHONE);
+            UIN = decryptedCredentialJson.getString(CredentialConstants.UIN);
+            VID = decryptedCredentialJson.getString(CredentialConstants.VID);
 
 //          addressLine1
-            org.json.JSONArray addressLine1Array = decryptedCredentialJson.getJSONArray("addressLine1");
+            org.json.JSONArray addressLine1Array =
+                    decryptedCredentialJson.getJSONArray(CredentialConstants.ADDRESS_LINE1);
             org.json.JSONObject addressLine1Obj = addressLine1Array.getJSONObject(0);
-            addressLine1 = addressLine1Obj.getString("value");
+            addressLine1 = addressLine1Obj.getString(VALUE);
 
 //          addressLine2 (Optional)
-            if (decryptedCredentialJson.has("addressLine2") && !decryptedCredentialJson.isNull("addressLine2")) {
-                org.json.JSONArray addressLine2Array = decryptedCredentialJson.getJSONArray("addressLine2");
+            if (decryptedCredentialJson.has(CredentialConstants.ADDRESS_LINE2)
+                    && !decryptedCredentialJson.isNull(CredentialConstants.ADDRESS_LINE2)) {
+
+                org.json.JSONArray addressLine2Array =
+                        decryptedCredentialJson.getJSONArray(CredentialConstants.ADDRESS_LINE2);
+
                 if (addressLine2Array.length() > 0) {
-                    addressLine2 = addressLine2Array.getJSONObject(0).optString("value", null);
+                    addressLine2 = addressLine2Array.getJSONObject(0)
+                            .optString(VALUE, null);
                 }
             }
 
 //          addressLine3 (Optional)
-            if (decryptedCredentialJson.has("addressLine3") && !decryptedCredentialJson.isNull("addressLine3")) {
-                org.json.JSONArray addressLine3Array = decryptedCredentialJson.getJSONArray("addressLine3");
+            if (decryptedCredentialJson.has(CredentialConstants.ADDRESS_LINE3)
+                    && !decryptedCredentialJson.isNull(CredentialConstants.ADDRESS_LINE3)) {
+
+                org.json.JSONArray addressLine3Array =
+                        decryptedCredentialJson.getJSONArray(CredentialConstants.ADDRESS_LINE3);
+
                 if (addressLine3Array.length() > 0) {
-                    addressLine3 = addressLine3Array.getJSONObject(0).optString("value", null);
+                    addressLine3 = addressLine3Array.getJSONObject(0)
+                            .optString(VALUE, null);
                 }
             }
 
 //          region (Optional)
-            if (decryptedCredentialJson.has("region") && !decryptedCredentialJson.isNull("region")) {
-                org.json.JSONArray regionArray = decryptedCredentialJson.getJSONArray("region");
+            if (decryptedCredentialJson.has(CredentialConstants.REGION)
+                    && !decryptedCredentialJson.isNull(CredentialConstants.REGION)) {
+
+                org.json.JSONArray regionArray =
+                        decryptedCredentialJson.getJSONArray(CredentialConstants.REGION);
+
                 if (regionArray.length() > 0) {
-                    region = regionArray.getJSONObject(0).optString("value", null);
+                    region = regionArray.getJSONObject(0)
+                            .optString(VALUE, null);
                 }
             }
 
 //          city (Optional)
-            if (decryptedCredentialJson.has("city") && !decryptedCredentialJson.isNull("city")) {
-                org.json.JSONArray cityArray = decryptedCredentialJson.getJSONArray("city");
+            if (decryptedCredentialJson.has(CredentialConstants.CITY)
+                    && !decryptedCredentialJson.isNull(CredentialConstants.CITY)) {
+
+                org.json.JSONArray cityArray =
+                        decryptedCredentialJson.getJSONArray(CredentialConstants.CITY);
+
                 if (cityArray.length() > 0) {
-                    city = cityArray.getJSONObject(0).optString("value", null);
+                    city = cityArray.getJSONObject(0)
+                            .optString(VALUE, null);
                 }
             }
 
-            postalCode = decryptedCredentialJson.getString("postalCode");
+            postalCode = decryptedCredentialJson.getString(CredentialConstants.POSTAL_CODE);
 
             // build address
             StringBuilder addressBuilder = new StringBuilder();
@@ -259,27 +301,26 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             address = addressBuilder.toString();
 
 
-            System.out.println("IN Digital Service IMPL");
-            System.out.println("Full Name : " + fullName);
-            System.out.println("Email      : " + email);
-            System.out.println("Phone      : " + phone);
-            System.out.println("dob : " + dob);
-            System.out.println("UIN      : " + UIN);
-            System.out.println("VID      : " + VID);
-            System.out.println("address : " + address);
-            System.out.println("==================================");
+//            System.out.println("IN Digital Service IMPL");
+//            System.out.println("Full Name : " + fullName);
+//            System.out.println("Email      : " + email);
+//            System.out.println("Phone      : " + phone);
+//            System.out.println("dob : " + dob);
+//            System.out.println("UIN      : " + UIN);
+//            System.out.println("VID      : " + VID);
+//            System.out.println("address : " + address);
+//            System.out.println("==================================");
 
             // Sending data to printInjiVcService
+
             Map<String, Object> claims = new LinkedHashMap<>();
-
-            claims.put("fullName", fullName);
-            claims.put("dob", dob);
-            claims.put("email", email);
-            claims.put("phone", phone);
-            claims.put("UIN", UIN);
-            claims.put("VID", VID);
+            claims.put(CredentialConstants.FULL_NAME, fullName);
+            claims.put(CredentialConstants.DOB, dob);
+            claims.put(CredentialConstants.EMAIL, email);
+            claims.put(CredentialConstants.PHONE, phone);
+            claims.put(CredentialConstants.UIN, UIN);
+            claims.put(CredentialConstants.VID, VID);
             claims.put("address", address);
-
             String vc = printInjiVcService.generatePreAuthorizedCode(claims);
 
 
@@ -287,11 +328,11 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             //sets additional attributes for all templates.
             setTemplateAttributes(decryptedCredentialJson, attributes);
             String prefLangAttr = (String) attributes.get(userPreferredLanguageAttribute);
-            logger.info("prefLangAttr {}", prefLangAttr);
+//            logger.info("prefLangAttr {}", prefLangAttr);
 
             String templateLangCode = languageUtility.getLangCodeFromNativeName(prefLangAttr);
-            logger.info("templateLangCode: {}, defaultTplLangCode: {}", templateLangCode, defaultTplLangCode);
-            logger.info("Additional Attributes: {}", attributes);
+//            logger.info("templateLangCode: {}, defaultTplLangCode: {}", templateLangCode, defaultTplLangCode);
+//            logger.info("Additional Attributes: {}", attributes);
             if (!StringUtils.hasText(templateLangCode)) {
                 templateLangCode = defaultTplLangCode;
             }
