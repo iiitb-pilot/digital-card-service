@@ -196,12 +196,6 @@
 			<groupId>io.mosip.vercred</groupId>
 			<artifactId>vcverifier</artifactId>
 			<version>1.0.0</version>
-			<exclusions>
-				<exclusion>
-					<groupId>info.weboftrust</groupId>
-					<artifactId>ld-signatures-java</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
