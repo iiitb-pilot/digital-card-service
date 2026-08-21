@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.mosip.digitalcard.constant.ApiName;
 import io.mosip.digitalcard.dto.TemplateResponseDto;
 import io.mosip.kernel.core.http.ResponseWrapper;
+import io.mosip.digitalcard.exception.ApisResourceAccessException;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.templatemanager.exception.TemplateMethodInvocationException;
 import io.mosip.kernel.core.templatemanager.exception.TemplateParsingException;
@@ -25,9 +26,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
+
+
 /**
  * The Class TemplateGenerator.
  * 
@@ -71,35 +72,47 @@ public class TemplateGenerator {
 	/**
 	 * Gets the template.
 	 *
-	 *   the template type code
+	 * @param templateTypeCode
+	 *            the template type code
 	 * @param attributes
 	 *            the attributes
 	 * @param langCode
 	 *            the lang code
 	 * @return the template
-	 * @throws Exception
+	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 *             the apis resource access exception
 	 */
-	public InputStream getTemplate(String cardTemplate, Map<String, Object> attributes, String langCode)
-			throws Exception {
+	public InputStream getTemplate(String templateTypeCode, Map<String, Object> attributes, String langCode)
+			throws IOException, ApisResourceAccessException {
 
-		//ResponseWrapper<?> responseWrapper;
-		//TemplateResponseDto template;
+		ResponseWrapper<?> responseWrapper;
+		TemplateResponseDto template;
 		printLogger.debug("TemplateGenerator::getTemplate()::entry");
 		try {
+			List<String> pathSegments = new ArrayList<>();
+			pathSegments.add(langCode);
+			pathSegments.add(templateTypeCode);
+
+			responseWrapper = (ResponseWrapper<?>) restClient.getApi(ApiName.TEMPLATES, pathSegments, "", "",
+					ResponseWrapper.class);
+			template = mapper.readValue(mapper.writeValueAsString(responseWrapper.getResponse()),
+					TemplateResponseDto.class);
 			InputStream fileTextStream = null;
-			InputStream stream = new ByteArrayInputStream(Base64.getDecoder().decode(environment.getProperty(cardTemplate)));
-			fileTextStream = getTemplateManager().merge(stream, attributes);
+
+
+			if (template != null) {
+				InputStream stream = new ByteArrayInputStream(
+						template.getTemplates().iterator().next().getFileText().getBytes());
+				fileTextStream = getTemplateManager().merge(stream, attributes);
+			}
 			printLogger.debug("TemplateGenerator::getTemplate()::exit");
 			return fileTextStream;
 
-		} catch (TemplateResourceNotFoundException | TemplateParsingException | TemplateMethodInvocationException e) {
+		}  catch (Exception e) {
 			printLogger.error(e.getMessage()
-							+ ExceptionUtils.getStackTrace(e));
-
-			throw new TemplateParsingException(e.getErrorCode()
-					,e.getErrorText());
+					+ ExceptionUtils.getStackTrace(e));
+			throw new TemplateParsingException(e.getMessage(), e.getMessage(), e);
 		}
 	}
 

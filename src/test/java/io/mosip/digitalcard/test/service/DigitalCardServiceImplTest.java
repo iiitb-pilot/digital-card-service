@@ -125,7 +125,7 @@ public class DigitalCardServiceImplTest {
             ReflectionTestUtils.invokeMethod(digitalCardService, "generateDigitalCard", credential, credentialType, dataShareUrl, eventId, transactionId, additionalAttributes);
         });
 
-        verify(pdfCardServiceImpl, never()).generateCard(any(), anyString(), anyString(), anyMap());
+        verify(pdfCardServiceImpl, never()).generateCard(any(), anyString(), anyString(), anyMap(), any());
         verify(webSubSubscriptionHelper, never()).digitalCardStatusUpdateEvent(anyString(), any());
     }
 
@@ -328,8 +328,7 @@ public class DigitalCardServiceImplTest {
         io.mosip.digitalcard.dto.SimpleType simpleType = new io.mosip.digitalcard.dto.SimpleType();
         simpleType.setLanguage("");
         simpleType.setValue("123");
-
-       assertEquals("123", ReflectionTestUtils.invokeMethod(digitalCardService, "getParameter", new io.mosip.digitalcard.dto.SimpleType[]{simpleType}, "Lang Code"));
+        assertEquals("123", ReflectionTestUtils.invokeMethod(digitalCardService, "getParameter", new io.mosip.digitalcard.dto.SimpleType[]{simpleType}, "Lang Code"));
     }
 
     @Test
@@ -338,8 +337,7 @@ public class DigitalCardServiceImplTest {
         io.mosip.digitalcard.dto.SimpleType simpleType = new io.mosip.digitalcard.dto.SimpleType();
         simpleType.setLanguage("eng");
         simpleType.setValue("123");
-
-       assertNull(ReflectionTestUtils.invokeMethod(digitalCardService, "getParameter", new io.mosip.digitalcard.dto.SimpleType[]{simpleType}, "Lang Code"));
+        assertNull(ReflectionTestUtils.invokeMethod(digitalCardService, "getParameter", new io.mosip.digitalcard.dto.SimpleType[]{simpleType}, "Lang Code"));
     }
 
     @Test
@@ -372,7 +370,8 @@ public class DigitalCardServiceImplTest {
         when(restClient.getForObject(dataShareUrl, String.class)).thenReturn(fetchedCredential);
         when(encryptionUtil.decryptData(fetchedCredential)).thenReturn(decrypted);
         when(credentialsVerifier.verifyCredentials(decrypted)).thenReturn(true);
-        when(pdfCardServiceImpl.generateCard(any(JSONObject.class), anyString(), anyString(), anyMap())).thenReturn(pdfBytes);
+        when(pdfCardServiceImpl.generateCard(any(JSONObject.class), anyString(), anyString(), anyMap(), any()))
+                .thenReturn(pdfBytes);
         when(digitalCardTransactionRepository.findByRID(anyString())).thenReturn(null);
         when(dataShareUtil.getDataShare(eq(pdfBytes), eq(dataSharePolicyId), eq(dataSharePartnerId)))
                 .thenReturn(new DataShareDto());
@@ -381,7 +380,7 @@ public class DigitalCardServiceImplTest {
 
         verify(restClient).getForObject(eq(dataShareUrl), eq(String.class));
         verify(credentialsVerifier).verifyCredentials(eq(decrypted));
-        verify(pdfCardServiceImpl).generateCard(any(JSONObject.class), anyString(), anyString(), anyMap());
+        verify(pdfCardServiceImpl).generateCard(any(JSONObject.class), anyString(), anyString(), anyMap(), any());
         verify(dataShareUtil).getDataShare(any(byte[].class), eq(dataSharePolicyId), eq(dataSharePartnerId));
         verify(digitalCardTransactionRepository).save(any(DigitalCardTransactionEntity.class));
         verify(webSubSubscriptionHelper).digitalCardStatusUpdateEvent(anyString(), any());
@@ -402,14 +401,16 @@ public class DigitalCardServiceImplTest {
 
         when(encryptionUtil.decryptData(credential)).thenReturn(decrypted);
         when(credentialsVerifier.verifyCredentials(decrypted)).thenReturn(true);
-        when(pdfCardServiceImpl.generateCard(any(JSONObject.class), anyString(), isNull(), anyMap())).thenReturn(pdfBytes);
+
+        when(pdfCardServiceImpl.generateCard(any(JSONObject.class), anyString(), isNull(), anyMap(), any())).thenReturn(pdfBytes);
         when(digitalCardTransactionRepository.findByRID(anyString())).thenReturn(null);
         when(dataShareUtil.getDataShare(eq(pdfBytes), anyString(), anyString())).thenReturn(new DataShareDto());
 
         digitalCardService.generateDigitalCard(credential, "ctype", null, eventId, transactionId, new HashMap<>());
 
         verify(credentialsVerifier).verifyCredentials(eq(decrypted));
-        verify(pdfCardServiceImpl).generateCard(any(JSONObject.class), anyString(), isNull(), anyMap());
+
+        verify(pdfCardServiceImpl).generateCard(any(JSONObject.class), anyString(), isNull(), anyMap(), any());
         verify(digitalCardTransactionRepository).save(any(DigitalCardTransactionEntity.class));
     }
 
