@@ -109,6 +109,9 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 	@Autowired
 	private CredentialsVerifier credentialsVerifier;
 
+	//for signature
+	@Value("${mosip.print.service.uincard.signature.required:true}")
+	private boolean isSignatureRequired;
 
 
 	@Value("${mosip.digitalcard.service.uincard.lowerleftx}")
@@ -278,35 +281,45 @@ public class PDFCardServiceImpl implements CardGeneratorService {
 		ByteArrayOutputStream out = null;
 		try {
 			out = (ByteArrayOutputStream) pdfGenerator.generate(in);
-			PDFSignatureRequestDto request = new PDFSignatureRequestDto(lowerLeftX, lowerLeftY, upperRightX,
-					upperRightY, reason, 1, password);
-			request.setApplicationId("KERNEL");
-			request.setReferenceId("SIGN");
-			request.setData(Base64.encodeBase64String(out.toByteArray()));
-			DateTimeFormatter format = DateTimeFormatter.ofPattern(env.getProperty(DATETIME_PATTERN));
-			LocalDateTime localdatetime = LocalDateTime
-					.parse(DateUtils2.getUTCCurrentDateTimeString(env.getProperty(DATETIME_PATTERN)), format);
-
-			request.setTimeStamp(DateUtils2.getUTCCurrentDateTimeString());
-			RequestWrapper<PDFSignatureRequestDto> requestWrapper = new RequestWrapper<>();
-
-			requestWrapper.setRequest(request);
-			requestWrapper.setRequesttime(localdatetime);
-			ResponseWrapper<?> responseWrapper;
-			SignatureResponseDto signatureResponseDto;
-
-			responseWrapper= restApiClient.postApi(ApiName.PDFSIGN, null, "",""
-					, MediaType.APPLICATION_JSON,requestWrapper, ResponseWrapper.class);
+			//for signature
+			logger.debug("Signature required - "+isSignatureRequired);
 
 
-			if (responseWrapper.getErrors() != null && !responseWrapper.getErrors().isEmpty()) {
-				ServiceError error = responseWrapper.getErrors().get(0);
-				throw new DigitalCardServiceException(error.getMessage());
+			if(isSignatureRequired) {
+				logger.debug("Signature required inside true - "+isSignatureRequired);
+				PDFSignatureRequestDto request = new PDFSignatureRequestDto(lowerLeftX, lowerLeftY, upperRightX,
+						upperRightY, reason, 1, password);
+				request.setApplicationId("KERNEL");
+				request.setReferenceId("SIGN");
+				request.setData(Base64.encodeBase64String(out.toByteArray()));
+				DateTimeFormatter format = DateTimeFormatter.ofPattern(env.getProperty(DATETIME_PATTERN));
+				LocalDateTime localdatetime = LocalDateTime
+						.parse(DateUtils2.getUTCCurrentDateTimeString(env.getProperty(DATETIME_PATTERN)), format);
+
+				request.setTimeStamp(DateUtils2.getUTCCurrentDateTimeString());
+				RequestWrapper<PDFSignatureRequestDto> requestWrapper = new RequestWrapper<>();
+
+				requestWrapper.setRequest(request);
+				requestWrapper.setRequesttime(localdatetime);
+				ResponseWrapper<?> responseWrapper;
+				SignatureResponseDto signatureResponseDto;
+
+				responseWrapper = restApiClient.postApi(ApiName.PDFSIGN, null, "", ""
+						, MediaType.APPLICATION_JSON, requestWrapper, ResponseWrapper.class);
+
+
+				if (responseWrapper.getErrors() != null && !responseWrapper.getErrors().isEmpty()) {
+					ServiceError error = responseWrapper.getErrors().get(0);
+					throw new DigitalCardServiceException(error.getMessage());
+				}
+				signatureResponseDto = objectMapper.readValue(objectMapper.writeValueAsString(responseWrapper.getResponse()),
+						SignatureResponseDto.class);
+
+				pdfSignatured = Base64.decodeBase64(signatureResponseDto.getData());
+			}else {
+				logger.debug("Signature required inside false - "+isSignatureRequired);
+				pdfSignatured = out.toByteArray();
 			}
-			signatureResponseDto = objectMapper.readValue(objectMapper.writeValueAsString(responseWrapper.getResponse()),
-					SignatureResponseDto.class);
-
-			pdfSignatured = Base64.decodeBase64(signatureResponseDto.getData());
 
 		} catch (Exception e) {
 			logger.info("ERROR[] :{}",e);
