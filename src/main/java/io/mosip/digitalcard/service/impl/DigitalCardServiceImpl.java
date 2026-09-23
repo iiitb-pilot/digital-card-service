@@ -317,6 +317,10 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             claims.put(CredentialConstants.UIN, UIN);
             claims.put(CredentialConstants.VID, VID);
             claims.put("address", address);
+
+            logger.info("========== INJI VC CLAIMS ==========");
+            logger.info("Claims: {}", claims);
+            logger.info("====================================");
             String vc = printInjiVcService.generatePreAuthorizedCode(claims);
 
 
