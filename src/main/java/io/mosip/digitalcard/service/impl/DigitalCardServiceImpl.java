@@ -311,7 +311,7 @@ public class DigitalCardServiceImpl implements DigitalCardService {
             Map<String, Object> claims = new LinkedHashMap<>();
             claims.put(CredentialConstants.FIRST_NAME, lastName);
             claims.put(CredentialConstants.LAST_NAME, firstName);
-            claims.put(CredentialConstants.DATE_OF_BIRTH, dob);
+            claims.put("dob", dob);
             claims.put(CredentialConstants.EMAIL, email);
             claims.put(CredentialConstants.PHONE, phone);
             claims.put(CredentialConstants.UIN, UIN);
